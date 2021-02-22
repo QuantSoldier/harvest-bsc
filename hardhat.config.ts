@@ -50,6 +50,7 @@ const config: HardhatUserConfig = {
   networks: {
     localhost: {
       url: "http://127.0.0.1:8545",
+      live: false
     },
     hardhat: {
       chainId: 56,
@@ -63,6 +64,7 @@ const config: HardhatUserConfig = {
       chainId: 97,
       gasPrice: 20000000000,
       accounts: { mnemonic: secrets.mnemonic },
+      live: false,
     },
     mainnet: {
       url: "https://bsc-dataseed.binance.org/",
