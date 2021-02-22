@@ -16,7 +16,7 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.5.15",
+    version: "0.5.16",
     settings: {
       optimizer: {
         enabled: true,
@@ -51,7 +51,13 @@ const config: HardhatUserConfig = {
     localhost: {
       url: "http://127.0.0.1:8545",
     },
-    hardhat: {},
+    hardhat: {
+      chainId: 56,
+      forking: {
+        // blockNumber: 4895000,
+        url: "https://bsc-dataseed1.ninicoin.io/",
+      },
+    },
     testnet: {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,

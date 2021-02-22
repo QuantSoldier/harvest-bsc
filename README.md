@@ -22,6 +22,26 @@ yarn compile
 yarn test
 ```
 
+## Usage
+
+- Deploy the contracts
+
+```
+npx hardhat --network testnet deploy
+
+yarn testnet:deploy
+yarn mainnet:deploy
+```
+
+- Run a script
+
+```
+npx hardhat --network testnet run scripts/my_script.ts
+
+yarn testnet:run -- scripts/my_script.ts
+yarn mainnet:run -- scripts/my_script.ts
+```
+
 ## References
 
 - Hardhat: https://hardhat.org/getting-started/
@@ -29,13 +49,17 @@ yarn test
 - BSC Hardhat Setup: https://docs.binance.org/smart-chain/developer/deploy/hardhat.html
 - BSC Metamask Setup: https://academy.binance.com/en/articles/connecting-metamask-to-binance-smart-chain
 - BSC Bridge: https://www.binance.org/en/bridge
+- BSC-ETH Swap Contracts: https://github.com/binance-chain/eth-bsc-swap-contracts/tree/audit1.0
+- Testnet Faucet: https://testnet.binance.org/faucet-smart
 - Local Network Setup: https://docs.binance.org/smart-chain/developer/deploy/local.html
 - BScan: https://bscscan.com/
 - PancakeSwap: https://pancakeswap.info/
 - Venus: https://venus.io/
 
-## Tokens
+## Contracts / Tokens
 
+- BSC Genesis Contract (TokenManager): https://testnet.bscscan.com/address/0x0000000000000000000000000000000000001008
+- RelayerHub: https://bscscan.com/address/0x0000000000000000000000000000000000001006
 - Binance Coin (WBNB): https://bscscan.com/token/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c
 - PancakeSwap (Cake): https://bscscan.com/token/0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82
 - Venus (XVS): https://bscscan.com/token/0xcF6BB5389c92Bdda8a3747Ddb454cB7a64626C63
@@ -50,4 +74,4 @@ yarn test
 ### Venus Protocol
 
 - VAIVault (Storage): https://bscscan.com/address/0x7680c89eb3e58dec4d38093b4803be2b7f257360
-- VAIVault (Proxy Impl, 2/13): https://bscscan.com/address/0x0667Eed0a0aAb930af74a3dfeDD263A73994f216
+- VAIVault (Proxy Impl): https://bscscan.com/address/0x0667Eed0a0aAb930af74a3dfeDD263A73994f216
