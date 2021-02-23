@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.5.0;
 
 import "../../hardworkInterface/IUpgradeSource.sol";
-import "@openzeppelin/upgrades/contracts/upgradeability/BaseUpgradeabilityProxy.sol";
+// import "@openzeppelin/upgrades/contracts/upgradeability/BaseUpgradeabilityProxy.sol";
 
-contract StrategyProxy is BaseUpgradeabilityProxy {
-
-  constructor(address _implementation) public {
-    _setImplementation(_implementation);
-  }
+contract StrategyProxy {
+  // constructor(address _implementation) public {
+  //   _setImplementation(_implementation);
+  // }
 
   /**
   * The main logic. If the timer has elapsed and there is a schedule upgrade,
@@ -18,7 +17,7 @@ contract StrategyProxy is BaseUpgradeabilityProxy {
   function upgrade() external {
     (bool should, address newImplementation) = IUpgradeSource(address(this)).shouldUpgrade();
     require(should, "Upgrade not scheduled");
-    _upgradeTo(newImplementation);
+    // _upgradeTo(newImplementation);
 
     // the finalization needs to be executed on itself to update the storage of this proxy
     // it also needs to be invoked by the governance, not by address(this), so delegatecall is needed
@@ -29,7 +28,7 @@ contract StrategyProxy is BaseUpgradeabilityProxy {
     require(success, "Issue when finalizing the upgrade");
   }
 
-  function implementation() external view returns (address) {
-    return _implementation();
-  }
+  // function implementation() external view returns (address) {
+  //   return _implementation();
+  // }
 }

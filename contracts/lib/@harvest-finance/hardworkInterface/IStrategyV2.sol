@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
 interface IStrategyV2 {
 
     function unsalvagableTokens(address tokens) external view returns (bool);
 
-    function governance() external view returns (address);
-    function controller() external view returns (address);
-    function underlying() external view returns (address);
-    function vault() external view returns (address);
+    // function governance() external view returns (address);
+    // function controller() external view returns (address);
+    // function underlying() external view returns (address);
+    // function vault() external view returns (address);
 
     function withdrawAllToVault() external;
     function withdrawToVault(uint256 correspondingShares, uint256 totalShares) external;

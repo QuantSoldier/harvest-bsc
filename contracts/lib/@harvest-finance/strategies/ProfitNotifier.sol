@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "../hardworkInterface/IController.sol";
 import "../Controllable.sol";
 
 contract ProfitNotifier is Controllable {
   using SafeMath for uint256;
-  using SafeERC20 for IERC20;
+  using SafeBEP20 for IBEP20;
 
   uint256 public profitSharingNumerator;
   uint256 public profitSharingDenominator;
@@ -40,8 +40,8 @@ contract ProfitNotifier is Controllable {
       uint256 feeAmount = profit.mul(profitSharingNumerator).div(profitSharingDenominator);
       emit ProfitLog(oldBalance, newBalance, feeAmount, block.timestamp);
 
-      IERC20(underlying).safeApprove(controller(), 0);
-      IERC20(underlying).safeApprove(controller(), feeAmount);
+      IBEP20(underlying).safeApprove(controller(), 0);
+      IBEP20(underlying).safeApprove(controller(), feeAmount);
       IController(controller()).notifyFee(
         underlying,
         feeAmount

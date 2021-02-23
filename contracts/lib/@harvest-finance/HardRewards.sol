@@ -1,21 +1,22 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./Governable.sol";
-import "./Controllable.sol";
+import {SafeMath} from "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
+import {IBEP20} from "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
+import {SafeBEP20} from "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
+import {Governable} from "./Governable.sol";
+import {Controllable} from "./Controllable.sol";
 
 contract HardRewards is Controllable {
 
   using SafeMath for uint256;
-  using SafeERC20 for IERC20;
+  using SafeBEP20 for IBEP20;
 
   event Rewarded(address indexed recipient, address indexed vault, uint256 amount);
 
   // token used for rewards
-  IERC20 public token;
+  IBEP20 public token;
 
   // how many tokens per each block
   uint256 public blockReward;
@@ -25,7 +26,7 @@ contract HardRewards is Controllable {
 
   constructor(address _storage, address _token)
   Controllable(_storage) public {
-    token = IERC20(_token);
+    token = IBEP20(_token);
   }
 
   /**
@@ -74,7 +75,7 @@ contract HardRewards is Controllable {
   * at the same time.
   */
   function load(address _token, uint256 _rate, uint256 _amount) external onlyGovernance {
-    token = IERC20(_token);
+    token = IBEP20(_token);
     blockReward = _rate;
     if (address(token) != address(0) && _amount > 0) {
       token.safeTransferFrom(msg.sender, address(this), _amount);

@@ -1,9 +1,9 @@
 {
-  "name": "@harvest-finance/harvest",
+  "name": "@harvest-finance/harvest-bsc",
   "description": "Harvest Finance: Binance Smart Chain",
   "version": "1.0.0",
   "license": "MIT",
-  "homepage": "https://defiat.net",
+  "homepage": "https://harvest.finance",
   "scripts": {
     "build": "hardhat compile && tsc",
     "compile": "hardhat compile",
@@ -19,10 +19,10 @@
   "devDependencies": {
     "@ethereum-waffle/chai": "^3.2.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.1",
-    "@openzeppelin/contracts": "2.5.0",
-    "@openzeppelin/contracts-ethereum-package": "2.5.0",
-    "@openzeppelin/upgrades": "2.5.0",
-    "@studydefi/money-legos": "^2.3.7",
+    "@openzeppelin/contracts-upgradeable": "^3.4.0",
+    "@openzeppelin/hardhat-upgrades": "^1.6.0",
+    "@pancakeswap-libs/pancake-swap-core": "^0.1.0",
+    "@pancakeswap/pancake-swap-lib": "^0.0.4",
     "@typechain/ethers-v5": "^5.0.0",
     "@types/chai": "^4.2.14",
     "@types/mocha": "^8.2.0",

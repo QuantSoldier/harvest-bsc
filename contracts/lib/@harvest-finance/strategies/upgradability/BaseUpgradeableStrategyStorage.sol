@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
 contract BaseUpgradeableStrategyStorage {
 

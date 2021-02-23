@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "./Storage.sol";
+import {Storage} from "./Storage.sol";
 
 contract Governable {
 

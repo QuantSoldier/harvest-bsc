@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "./GovernableInit.sol";
+import {GovernableInit} from "./GovernableInit.sol";
+import {Storage} from "./Storage.sol";
 
 // A clone of Governable supporting the Initializable interface and pattern
 contract ControllableInit is GovernableInit {
@@ -10,7 +11,7 @@ contract ControllableInit is GovernableInit {
   constructor() public {
   }
 
-  function initialize(address _storage) public initializer {
+  function initialize(address _storage) public override initializer {
     GovernableInit.initialize(_storage);
   }
 

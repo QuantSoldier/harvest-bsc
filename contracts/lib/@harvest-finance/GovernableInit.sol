@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "./Storage.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import {Storage} from "./Storage.sol";
 
 // A clone of Governable supporting the Initializable interface and pattern
 contract GovernableInit is Initializable {
@@ -19,7 +19,7 @@ contract GovernableInit is Initializable {
     assert(_STORAGE_SLOT == bytes32(uint256(keccak256("eip1967.governableInit.storage")) - 1));
   }
 
-  function initialize(address _store) public initializer {
+  function initialize(address _store) public virtual initializer {
     _setStorage(_store);
   }
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
 interface IVault {
 
@@ -8,8 +8,8 @@ interface IVault {
     function underlyingBalanceWithInvestment() external view returns (uint256);
 
     // function store() external view returns (address);
-    function governance() external view returns (address);
-    function controller() external view returns (address);
+    // function governance() external view returns (address);
+    // function controller() external view returns (address);
     function underlying() external view returns (address);
     function strategy() external view returns (address);
 

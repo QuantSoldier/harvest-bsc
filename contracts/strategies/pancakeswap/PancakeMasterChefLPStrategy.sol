@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
+import "./IMasterChef.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategyV2.sol";
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+// import "@openzeppelin/contracts/math/Math.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
+// import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
+import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategy.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IVault.sol";
 import "../../lib/@harvest-finance/strategies/upgradability/BaseUpgradeableStrategy.sol";
-import "../../lib/@pancake/interfaces/IMasterChef.sol";
-import "../../lib/@pancake/interfaces/IPancakePair.sol";
-import "../../lib/@pancake/interfaces/IPancakeRouter02.sol";
+import "@pancakeswap-libs/pancake-swap-core/contracts/interfaces/IPancakePair.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   using SafeMath for uint256;
-  using SafeERC20 for IERC20;
+  using SafeBEP20 for IBEP20;
 
   address public constant uniswapRouterV2 = address(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
   address public constant sushiswapRouterV2 = address(0xd9e1cE17f2641f24aE83637ab66a2cca9C378B9F);
@@ -73,7 +74,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     setBoolean(_USE_UNI_SLOT, true);
   }
 
-  function depositArbCheck() public view returns(bool) {
+  function depositArbCheck() public view override returns(bool) {
     return true;
   }
 
@@ -88,14 +89,14 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
       }
   }
 
-  function unsalvagableTokens(address token) public view returns (bool) {
+  function unsalvagableTokens(address token) public view override returns (bool) {
     return (token == rewardToken() || token == underlying());
   }
 
   function enterRewardPool() internal {
-    uint256 entireBalance = IERC20(underlying()).balanceOf(address(this));
-    IERC20(underlying()).safeApprove(rewardPool(), 0);
-    IERC20(underlying()).safeApprove(rewardPool(), entireBalance);
+    uint256 entireBalance = IBEP20(underlying()).balanceOf(address(this));
+    IBEP20(underlying()).safeApprove(rewardPool(), 0);
+    IBEP20(underlying()).safeApprove(rewardPool(), entireBalance);
     IMasterChef(rewardPool()).deposit(poolId(), entireBalance);
   }
 
@@ -133,7 +134,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
 
   // We assume that all the tradings can be done on Uniswap
   function _liquidateReward() internal {
-    uint256 rewardBalance = IERC20(rewardToken()).balanceOf(address(this));
+    uint256 rewardBalance = IBEP20(rewardToken()).balanceOf(address(this));
     if (!sell() || rewardBalance < sellFloor()) {
       // Profits can be disabled for possible simplified and rapid exit
       emit ProfitsNotCollected(sell(), rewardBalance < sellFloor());
@@ -141,7 +142,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     }
 
     notifyProfitInRewardToken(rewardBalance);
-    uint256 remainingRewardBalance = IERC20(rewardToken()).balanceOf(address(this));
+    uint256 remainingRewardBalance = IBEP20(rewardToken()).balanceOf(address(this));
 
     address uniLPComponentToken0 = IPancakePair(underlying()).token0();
     address uniLPComponentToken1 = IPancakePair(underlying()).token1();
@@ -169,8 +170,8 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
       // allow Uniswap to sell our reward
       uint256 amountOutMin = 1;
 
-      IERC20(rewardToken()).safeApprove(routerV2, 0);
-      IERC20(rewardToken()).safeApprove(routerV2, remainingRewardBalance);
+      IBEP20(rewardToken()).safeApprove(routerV2, 0);
+      IBEP20(rewardToken()).safeApprove(routerV2, remainingRewardBalance);
 
       uint256 toToken0 = remainingRewardBalance / 2;
       uint256 toToken1 = remainingRewardBalance.sub(toToken0);
@@ -179,36 +180,36 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
 
       // sell Uni to token1
       // we can accept 1 as minimum because this is called only by a trusted role
-      IPancakeRouter02(routerV2).swapExactTokensForTokens(
+      IUniswapV2Router02(routerV2).swapExactTokensForTokens(
         toToken0,
         amountOutMin,
         routesToken0,
         address(this),
         block.timestamp
       );
-      uint256 token0Amount = IERC20(uniLPComponentToken0).balanceOf(address(this));
+      uint256 token0Amount = IBEP20(uniLPComponentToken0).balanceOf(address(this));
 
       // sell Uni to token2
       // we can accept 1 as minimum because this is called only by a trusted role
-      IPancakeRouter02(routerV2).swapExactTokensForTokens(
+      IUniswapV2Router02(routerV2).swapExactTokensForTokens(
         toToken1,
         amountOutMin,
         routesToken1,
         address(this),
         block.timestamp
       );
-      uint256 token1Amount = IERC20(uniLPComponentToken1).balanceOf(address(this));
+      uint256 token1Amount = IBEP20(uniLPComponentToken1).balanceOf(address(this));
 
       // provide token1 and token2 to SUSHI
-      IERC20(uniLPComponentToken0).safeApprove(sushiswapRouterV2, 0);
-      IERC20(uniLPComponentToken0).safeApprove(sushiswapRouterV2, token0Amount);
+      IBEP20(uniLPComponentToken0).safeApprove(sushiswapRouterV2, 0);
+      IBEP20(uniLPComponentToken0).safeApprove(sushiswapRouterV2, token0Amount);
 
-      IERC20(uniLPComponentToken1).safeApprove(sushiswapRouterV2, 0);
-      IERC20(uniLPComponentToken1).safeApprove(sushiswapRouterV2, token1Amount);
+      IBEP20(uniLPComponentToken1).safeApprove(sushiswapRouterV2, 0);
+      IBEP20(uniLPComponentToken1).safeApprove(sushiswapRouterV2, token1Amount);
 
       // we provide liquidity to sushi
       uint256 liquidity;
-      (,,liquidity) = IPancakeRouter02(sushiswapRouterV2).addLiquidity(
+      (,,liquidity) = IUniswapV2Router02(sushiswapRouterV2).addLiquidity(
         uniLPComponentToken0,
         uniLPComponentToken1,
         token0Amount,
@@ -227,7 +228,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   function investAllUnderlying() internal onlyNotPausedInvesting {
     // this check is needed, because most of the SNX reward pools will revert if
     // you try to stake(0).
-    if(IERC20(underlying()).balanceOf(address(this)) > 0) {
+    if(IBEP20(underlying()).balanceOf(address(this)) > 0) {
       enterRewardPool();
     }
   }
@@ -235,12 +236,12 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   /*
   *   Withdraws all the asset to the vault
   */
-  function withdrawAllToVault() public restricted {
+  function withdrawAllToVault() public override restricted {
     if (address(rewardPool()) != address(0)) {
       exitRewardPool();
     }
     _liquidateReward();
-    IERC20(underlying()).safeTransfer(vault(), IERC20(underlying()).balanceOf(address(this)));
+    IBEP20(underlying()).safeTransfer(vault(), IBEP20(underlying()).balanceOf(address(this)));
   }
 
   /*
@@ -249,42 +250,46 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   function withdrawToVault(uint256 amount) public restricted {
     // Typically there wouldn't be any amount here
     // however, it is possible because of the emergencyExit
-    uint256 entireBalance = IERC20(underlying()).balanceOf(address(this));
+    uint256 entireBalance = IBEP20(underlying()).balanceOf(address(this));
 
     if(amount > entireBalance){
       // While we have the check above, we still using SafeMath below
       // for the peace of mind (in case something gets changed in between)
       uint256 needToWithdraw = amount.sub(entireBalance);
-      uint256 toWithdraw = Math.min(rewardPoolBalance(), needToWithdraw);
+      uint256 toWithdraw = SafeMath.min(rewardPoolBalance(), needToWithdraw);
       IMasterChef(rewardPool()).withdraw(poolId(), toWithdraw);
     }
 
-    IERC20(underlying()).safeTransfer(vault(), amount);
+    IBEP20(underlying()).safeTransfer(vault(), amount);
+  }
+
+  function withdrawToVault(uint256 correspondingShares, uint256 totalShares)  public override restricted {
+
   }
 
   /*
   *   Note that we currently do not have a mechanism here to include the
   *   amount of reward that is accrued.
   */
-  function investedUnderlyingBalance() external view returns (uint256) {
+  function investedUnderlyingBalance() external view override returns (uint256) {
     if (rewardPool() == address(0)) {
-      return IERC20(underlying()).balanceOf(address(this));
+      return IBEP20(underlying()).balanceOf(address(this));
     }
     // Adding the amount locked in the reward pool and the amount that is somehow in this contract
     // both are in the units of "underlying"
     // The second part is needed because there is the emergency exit mechanism
     // which would break the assumption that all the funds are always inside of the reward pool
-    return rewardPoolBalance().add(IERC20(underlying()).balanceOf(address(this)));
+    return rewardPoolBalance().add(IBEP20(underlying()).balanceOf(address(this)));
   }
 
   /*
   *   Governance or Controller can claim coins that are somehow transferred into the contract
   *   Note that they cannot come in take away coins that are used and defined in the strategy itself
   */
-  function salvage(address recipient, address token, uint256 amount) external onlyControllerOrGovernance {
+  function salvage(address recipient, address token, uint256 amount) external override onlyControllerOrGovernance {
      // To make sure that governance cannot come in and take away the coins
     require(!unsalvagableTokens(token), "token is defined as not salvagable");
-    IERC20(token).safeTransfer(recipient, amount);
+    IBEP20(token).safeTransfer(recipient, amount);
   }
 
   /*
@@ -295,7 +300,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   *   calling `investAllUnderlying()` affectively blocks the usage of `doHardWork`
   *   when the investing is being paused by governance.
   */
-  function doHardWork() external onlyNotPausedInvesting restricted {
+  function doHardWork() external override onlyNotPausedInvesting restricted {
     exitRewardPool();
     _liquidateReward();
     investAllUnderlying();

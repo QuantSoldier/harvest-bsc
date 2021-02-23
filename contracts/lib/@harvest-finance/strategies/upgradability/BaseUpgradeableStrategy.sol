@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
+pragma solidity >=0.6.0;
 
-import "@openzeppelin/upgrades/contracts/Initializable.sol";
-import "./BaseUpgradeableStrategyStorage.sol";
-import "../../ControllableInit.sol";
-import "../../hardworkInterface/IController.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import {BaseUpgradeableStrategyStorage} from "./BaseUpgradeableStrategyStorage.sol";
+import {ControllableInit} from "../../ControllableInit.sol";
+import {IController} from "../../hardworkInterface/IController.sol";
+import {IBEP20} from "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
+import {SafeMath} from "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
+import {SafeBEP20} from "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 
 contract BaseUpgradeableStrategy is Initializable, ControllableInit, BaseUpgradeableStrategyStorage {
   using SafeMath for uint256;
-  using SafeERC20 for IERC20;
+  using SafeBEP20 for IBEP20;
 
   event ProfitsNotCollected(bool sell, bool floor);
   event ProfitLogInReward(uint256 profitAmount, uint256 feeAmount, uint256 timestamp);
@@ -90,8 +90,8 @@ contract BaseUpgradeableStrategy is Initializable, ControllableInit, BaseUpgrade
     if( _rewardBalance > 0 ){
       uint256 feeAmount = _rewardBalance.mul(profitSharingNumerator()).div(profitSharingDenominator());
       emit ProfitLogInReward(_rewardBalance, feeAmount, block.timestamp);
-      IERC20(rewardToken()).safeApprove(controller(), 0);
-      IERC20(rewardToken()).safeApprove(controller(), feeAmount);
+      IBEP20(rewardToken()).safeApprove(controller(), 0);
+      IBEP20(rewardToken()).safeApprove(controller(), feeAmount);
 
       IController(controller()).notifyFee(
         rewardToken(),

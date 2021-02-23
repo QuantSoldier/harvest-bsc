@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.16;
-
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+pragma solidity >=0.6.0;
 
 // Unifying the interface with the Synthetix Reward Pool 
 interface IRewardPool {
