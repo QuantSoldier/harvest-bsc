@@ -11,16 +11,16 @@ const func: DeployFunction = async ({
 
   // only deploy the mock token on non-live networks
   if (!network.live) {
-    const result = await deploy('bFARM', {
+    const result = await deploy("RewardToken", {
       log: true,
-      from: deployer
-    })
-  
+      from: deployer,
+    });
+
     if (result.newlyDeployed) {
       //
     }
-  }  
-}
+  }
+};
 
 export default func;
-func.tags = ["Token"]
+func.tags = ["Token"];

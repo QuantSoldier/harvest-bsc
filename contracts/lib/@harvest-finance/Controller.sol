@@ -86,7 +86,9 @@ contract Controller is IController, Governable {
     }
 
     constructor(address _storage, address _feeRewardForwarder)
-    Governable(_storage) public {
+        Governable(_storage) 
+        public 
+    {
         require(_feeRewardForwarder != address(0), "feeRewardForwarder should not be empty");
         feeRewardForwarder = _feeRewardForwarder;
     }
@@ -134,14 +136,18 @@ contract Controller is IController, Governable {
         return IVault(_vault).getPricePerFullShare();
     }
 
-    function doHardWork(address _vault,
+    function doHardWork(
+        address _vault,
         uint256 hint,
         uint256 deviationNumerator,
         uint256 deviationDenominator
-    ) external override
-    confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-    onlyHardWorkerOrGovernance
-    validVault(_vault) {
+    ) 
+        external 
+        override
+        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
+        onlyHardWorkerOrGovernance
+        validVault(_vault) 
+    {
         uint256 oldSharePrice = IVault(_vault).getPricePerFullShare();
         IVault(_vault).doHardWork();
         if (address(hardRewards) != address(0)) {
@@ -157,26 +163,32 @@ contract Controller is IController, Governable {
         );
     }
 
-    function withdrawAll(address _vault,
+    function withdrawAll(
+        address _vault,
         uint256 hint,
         uint256 deviationNumerator,
         uint256 deviationDenominator
-    ) external
-    confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-    onlyGovernance
-    validVault(_vault) {
+    ) 
+        external
+        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
+        onlyGovernance
+        validVault(_vault)
+    {
         IVault(_vault).withdrawAll();
     }
 
-    function setStrategy(address _vault,
+    function setStrategy(
+        address _vault,
         address strategy,
         uint256 hint,
         uint256 deviationNumerator,
         uint256 deviationDenominator
-    ) external
-    confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-    onlyGovernance
-    validVault(_vault) {
+    ) 
+        external
+        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
+        onlyGovernance
+        validVault(_vault)
+    {
         IVault(_vault).setStrategy(strategy);
     }
 

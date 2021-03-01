@@ -38,6 +38,22 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: 0,
+    token: {
+      56: "0x58eDB145b4D9b268056dB1a60029C9Db20648350",
+      97: "0x935f7Bc1ba9015cEbaE8d98D4B5F8Dae30a2E84d",
+    },
+    forwarder: {
+      56: "",
+      97: "0x314D178737D8F63a53f362a2145BBC2272537A02",
+    },
+    storage: {
+      56: "",
+      97: "0xff3b7e5Ff30fCd84CC2351f56F3e20397e54E52D",
+    },
+    controller: {
+      56: "",
+      97: "0x399C85c91Ad7Cdea4B9f8bd435EC2e1d03888801",
+    },
     pancake: {
       56: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
       97: "",
@@ -50,7 +66,7 @@ const config: HardhatUserConfig = {
   networks: {
     localhost: {
       url: "http://127.0.0.1:8545",
-      live: false
+      live: false,
     },
     hardhat: {
       chainId: 56,
@@ -63,7 +79,7 @@ const config: HardhatUserConfig = {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
       gasPrice: 20000000000,
-      accounts: { mnemonic: secrets.mnemonic },
+      accounts: secrets.privateKey ? [`0x${secrets.privateKey}`] : [],
       live: false,
     },
     mainnet: {

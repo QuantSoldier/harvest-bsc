@@ -11,6 +11,7 @@
     "./hardhat.config.ts",
     "./deploy", 
     "./scripts",
+    "./test",
     "./utils",
   ],
   "exclude": [

@@ -6,15 +6,16 @@ const func: DeployFunction = async ({
   network,
   ethers,
 }) => {
-  const {deploy} = deployments
-  const {deployer} = await getNamedAccounts()
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
 
   // Use Proxy deployment to upgrade
-  const result = await deploy('Strategy',{
-    log: true,
-    from: deployer,
-    proxy: true
-  })
-}
- 
+  // const result = await deploy('Strategy',{
+  //   log: true,
+  //   from: deployer,
+  //   proxy: true
+  // })
+};
+
 export default func;
+func.tags = ["PancakeSwapStrategy"];
