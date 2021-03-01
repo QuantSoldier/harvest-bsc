@@ -13,10 +13,12 @@
     "local:run": "hardhat --network localhost run",
     "testnet:deploy": "hardhat --network testnet deploy",
     "testnet:run": "hardhat --network testnet run",
-    "testnet:verify": "hardhat --network testnet sourcify",
+    "testnet:sourcify": "hardhat --network testnet sourcify",
+    "testnet:verify": "hardhat --network testnet verify",
     "mainnet:deploy": "hardhat --network mainnet deploy",
     "mainnet:run": "hardhat --network mainnet run",
-    "mainnet:verify": "hardhat --network mainnet sourcify",
+    "mainnet:sourcify": "hardhat --network mainnet sourcify",
+    "mainnet:verify": "hardhat --network mainnet verify"
   },
   "devDependencies": {
     "@ethereum-waffle/chai": "^3.2.2",

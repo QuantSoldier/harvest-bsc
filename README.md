@@ -38,8 +38,17 @@ yarn mainnet:deploy
 ```
 npx hardhat --network testnet run scripts/my_script.ts
 
-yarn testnet:run -- scripts/my_script.ts
-yarn mainnet:run -- scripts/my_script.ts
+yarn testnet:run scripts/my_script.ts
+yarn mainnet:run scripts/my_script.ts
+```
+
+- Verifying a contract (https://docs.binance.org/smart-chain/developer/deploy/hardhat-verify.html)
+
+```
+npx hardhat verify --network mainnet DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1" "Constructor argument 2"
+
+yarn testnet:verify 0x314D178737D8F63a53f362a2145BBC2272537A02 "0xff3b7e5Ff30fCd84CC2351f56F3e20397e54E52D" "0x935f7Bc1ba9015cEbaE8d98D4B5F8Dae30a2E84d"
+yarn mainnet:verify 0xbF39886B4F91F5170934191b0d96Dd277147FBB2
 ```
 
 ## References

@@ -2,8 +2,9 @@ import "dotenv/config";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
-import "hardhat-spdx-license-identifier";
+// import "hardhat-spdx-license-identifier";
 import "hardhat-typechain";
+import "@nomiclabs/hardhat-etherscan"
 import secrets from "./secrets.json";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -29,12 +30,15 @@ const config: HardhatUserConfig = {
     cache: "./build/cache",
     deployments: "./deployments",
   },
-  spdxLicenseIdentifier: {
-    overwrite: false,
-    runOnCompile: true,
-  },
+  // spdxLicenseIdentifier: {
+  //   overwrite: false,
+  //   runOnCompile: true,
+  // },
   mocha: {
     timeout: 1200000,
+  },
+  etherscan: {
+    apiKey: secrets.bscanKey || ''
   },
   namedAccounts: {
     deployer: 0,
