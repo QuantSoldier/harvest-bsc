@@ -2,9 +2,13 @@ import "dotenv/config";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
+
 // import "hardhat-spdx-license-identifier";
+import "@openzeppelin/hardhat-upgrades";
 import "hardhat-typechain";
+// import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan"
+
 import secrets from "./secrets.json";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -58,9 +62,21 @@ const config: HardhatUserConfig = {
       56: "",
       97: "0x399C85c91Ad7Cdea4B9f8bd435EC2e1d03888801",
     },
-    pancake: {
+    router: {
+      56: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
+      97: ""
+    },
+    chef: {
+      56: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
+      97: ""
+    },
+    cake: {
       56: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
       97: "",
+    },
+    cakeLp: {
+      56: "0xA527a61703D82139F8a06Bc30097cC9CAA2df5A6",
+      97: ""
     },
     venus: {
       56: "0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63",
@@ -75,7 +91,6 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 56,
       forking: {
-        // blockNumber: 4895000,
         url: "https://bsc-dataseed1.ninicoin.io/",
       },
     },

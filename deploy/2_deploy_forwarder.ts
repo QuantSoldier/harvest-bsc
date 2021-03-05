@@ -9,7 +9,6 @@ const func: DeployFunction = async ({
 }) => {
   const { deploy } = deployments;
   const { deployer, token } = await getNamedAccounts();
-
   const storage = (await ethers.getContract("Storage", deployer)) as Storage;
 
   let tokenAddress: string;
