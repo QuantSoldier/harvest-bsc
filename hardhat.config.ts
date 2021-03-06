@@ -4,7 +4,7 @@ import "hardhat-deploy";
 import "hardhat-deploy-ethers";
 
 // import "hardhat-spdx-license-identifier";
-import "@openzeppelin/hardhat-upgrades";
+// import "@openzeppelin/hardhat-upgrades";
 import "hardhat-typechain";
 // import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan"

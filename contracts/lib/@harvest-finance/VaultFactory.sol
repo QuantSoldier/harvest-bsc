@@ -19,8 +19,7 @@ contract VaultFactory is Controllable {
     uint256 _toInvestNumerator,
     uint256 _toInvestDenominator
   ) public onlyGovernance returns(address) {
-    // VaultProxy proxy = new VaultProxy(_implementation);
-    VaultProxy proxy = new VaultProxy();
+    VaultProxy proxy = new VaultProxy(_implementation);
     Vault(address(proxy)).initializeVault(
       _storage,
       _underlying,

@@ -6,8 +6,6 @@ interface IStrategy {
     
     function unsalvagableTokens(address tokens) external view returns (bool);
     
-    function governance() external view returns (address);
-    function controller() external view returns (address);
     function underlying() external view returns (address);
     function vault() external view returns (address);
 
