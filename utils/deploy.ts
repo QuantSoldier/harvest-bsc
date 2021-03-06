@@ -1,5 +1,6 @@
 import { deployments, getNamedAccounts } from "hardhat";
 import { getStorage, getStorageAt, getStrategyAt, getVaultAt } from "./contracts";
+import { logDeployEnd, logDeployStart } from "./log";
 
 export const deployPool = async (
   farmToken:string,
@@ -10,6 +11,8 @@ export const deployPool = async (
 ) => {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
+
+  logDeployStart('NoMintRewardPool', deployer)
 
   const result = await deploy('NoMintRewardPool', {
     log: true,
@@ -24,6 +27,8 @@ export const deployPool = async (
       migrator
     ]
   })
+
+  logDeployEnd('NoMintRewardPool', result.address)
 
   return result.address;
 }
@@ -96,11 +101,15 @@ export const deployVault = async (
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
+  logDeployStart('Vault', deployer);
+
   // Use Proxy deployment to upgrade
   const result = await deploy('Vault', {
     log: true,
     from: deployer,  
   })
+
+  logDeployEnd('Vault', result.address);
 
   if (result.newlyDeployed) {
     const vault = await getVaultAt(result.address, deployer);
@@ -122,12 +131,16 @@ export const deployVaultProxy = async (
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
+  logDeployStart('VaultProxy', deployer);
+
   // Use Proxy deployment to upgrade
   const result = await deploy('VaultProxy', {
     log: true,
     from: deployer,
     args: [implementation]
   })
+
+  logDeployEnd('VaultProxy', result.address)
 
   return result.address;
 }

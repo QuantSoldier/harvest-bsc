@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.6.0;
 
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";

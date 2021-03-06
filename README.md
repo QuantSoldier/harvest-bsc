@@ -65,10 +65,8 @@ yarn mainnet:verify 0xbF39886B4F91F5170934191b0d96Dd277147FBB2
 - PancakeSwap: https://pancakeswap.info/
 - Venus: https://venus.io/
 
-## Contracts / Tokens
+## Tokens
 
-- BSC Genesis Contract (TokenManager): https://testnet.bscscan.com/address/0x0000000000000000000000000000000000001008
-- RelayerHub: https://bscscan.com/address/0x0000000000000000000000000000000000001006
 - Binance Coin (WBNB): https://bscscan.com/token/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c
 - PancakeSwap (Cake): https://bscscan.com/token/0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82
 - Venus (XVS): https://bscscan.com/token/0xcF6BB5389c92Bdda8a3747Ddb454cB7a64626C63
@@ -80,10 +78,15 @@ yarn mainnet:verify 0xbF39886B4F91F5170934191b0d96Dd277147FBB2
 - PancakeFactory: https://bscscan.com/address/0xBCfCcbde45cE874adCB698cC183deBcF17952812
 - PancakeRouter: https://bscscan.com/address/0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F
 
-Pool ID = 0: CAKE => CAKE
+Pool ID = 0: CAKE => CAKE  
 Pool ID = 1: CAKE/WBNB => CAKE
 
 ### Venus Protocol
 
 - VAIVault (Storage): https://bscscan.com/address/0x7680c89eb3e58dec4d38093b4803be2b7f257360
 - VAIVault (Proxy Impl): https://bscscan.com/address/0x0667Eed0a0aAb930af74a3dfeDD263A73994f216
+
+### Binance Bridge Contracts
+
+- TokenManager: https://testnet.bscscan.com/address/0x0000000000000000000000000000000000001008
+- RelayerHub: https://bscscan.com/address/0x0000000000000000000000000000000000001006

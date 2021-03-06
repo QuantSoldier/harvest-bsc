@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.6.0;
 
 import {Address} from "@pancakeswap/pancake-swap-lib/contracts/utils/Address.sol";

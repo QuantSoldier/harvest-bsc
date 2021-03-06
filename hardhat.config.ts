@@ -2,13 +2,9 @@ import "dotenv/config";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
-
-// import "hardhat-spdx-license-identifier";
-// import "@openzeppelin/hardhat-upgrades";
+import "hardhat-spdx-license-identifier";
 import "hardhat-typechain";
-// import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan"
-
 import secrets from "./secrets.json";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -34,10 +30,10 @@ const config: HardhatUserConfig = {
     cache: "./build/cache",
     deployments: "./deployments",
   },
-  // spdxLicenseIdentifier: {
-  //   overwrite: false,
-  //   runOnCompile: true,
-  // },
+  spdxLicenseIdentifier: {
+    overwrite: false,
+    runOnCompile: true,
+  },
   mocha: {
     timeout: 1200000,
   },
@@ -61,6 +57,10 @@ const config: HardhatUserConfig = {
     controller: {
       56: "",
       97: "0x399C85c91Ad7Cdea4B9f8bd435EC2e1d03888801",
+    },
+    wbnb: {
+      56: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+      97: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
     },
     router: {
       56: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
