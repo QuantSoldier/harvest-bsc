@@ -64,19 +64,23 @@ const config: HardhatUserConfig = {
     },
     router: {
       56: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
-      97: ""
+      97: "0xC250F711f9C7d662E6d119EAFECd04b49F071267"
     },
     chef: {
       56: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
-      97: ""
+      97: "0x9F2Ecb21CD106fC4ad11c94B2b0f1E60dFDbeebc"
     },
     cake: {
       56: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
-      97: "",
+      97: "0xdE888574e20961649a3B2c801Dc6F7295a0f78b6",
     },
     cakeLp: {
       56: "0xA527a61703D82139F8a06Bc30097cC9CAA2df5A6",
       97: ""
+    },
+    syrup: {
+      56: "",
+      97: "0xE32f7b463248B63F5B36354b0DFF1220C2e0dbc5"
     },
     venus: {
       56: "0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63",

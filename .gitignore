@@ -11,8 +11,8 @@ yarn.lock
 # production
 /abi
 /build
-# /deployments
 /typechain
+/deployments/localhost
 
 # credentials
 secrets.json

@@ -5,7 +5,6 @@ pragma solidity >=0.6.0;
 import "./IMasterChef.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategyV2.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
-// import "@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategy.sol";
@@ -13,6 +12,7 @@ import "../../lib/@harvest-finance/hardworkInterface/IVault.sol";
 import "../../lib/@harvest-finance/strategies/upgradability/BaseUpgradeableStrategy.sol";
 import "@pancakeswap-libs/pancake-swap-core/contracts/interfaces/IPancakePair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
+import "hardhat/console.sol";
 
 contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   using SafeMath for uint256;
@@ -54,14 +54,21 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     address _lpt;
     (_lpt,,,) = IMasterChef(rewardPool()).poolInfo(_poolID);
     require(_lpt == underlying(), "Pool Info does not match underlying");
+    console.log("LPT is %s", _lpt);
     _setPoolId(_poolID);
 
-    address uniLPComponentToken0 = IPancakePair(underlying()).token0();
-    address uniLPComponentToken1 = IPancakePair(underlying()).token1();
+    // if we are staking in the CAKE pool
+    if (_underlying == _rewardToken) {
+   
+    } else {
+      address uniLPComponentToken0 = IPancakePair(underlying()).token0();
+      address uniLPComponentToken1 = IPancakePair(underlying()).token1();
 
-    // these would be required to be initialized separately by governance
-    pancakeswapRoutes[uniLPComponentToken0] = new address[](0);
-    pancakeswapRoutes[uniLPComponentToken1] = new address[](0);
+      // these would be required to be initialized separately by governance
+      pancakeswapRoutes[uniLPComponentToken0] = new address[](0);
+      pancakeswapRoutes[uniLPComponentToken1] = new address[](0);
+    }
+    
   }
 
   function depositArbCheck() public view override returns(bool) {

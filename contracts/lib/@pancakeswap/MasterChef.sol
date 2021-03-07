@@ -17,7 +17,7 @@ import {SyrupBar} from "./SyrupBar.sol";
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract PancakeChef is Ownable {
+contract MasterChef is Ownable {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 

@@ -1,5 +1,5 @@
-import { deployments, getNamedAccounts } from "hardhat";
-import { getStorage, getStorageAt, getStrategyAt, getVaultAt } from "./contracts";
+import { deployments, ethers, getNamedAccounts } from "hardhat";
+import { getMasterChefStrategyAt, getStorage, getStorageAt, getStrategyAt, getVaultAt } from "./contracts";
 import { logDeployEnd, logDeployStart } from "./log";
 
 export const deployPool = async (
@@ -56,22 +56,37 @@ export const deployMigrator = async (
   return result.address;
 }
 
-export const deployStrategy = async (
-  strategy:string,
+export const deployMasterChefStrategy = async (
   storage:string,
   underlying:string,
   vault:string,
-  yieldContract:string,
-  yieldToken:string
+  pid:number
+  // yieldContract:string,
+  // yieldToken:string
 ) => {
   const { deploy } = deployments;
-  const { deployer } = await getNamedAccounts();
+  const { deployer, cake, chef } = await getNamedAccounts();
 
   // Use Proxy deployment to upgrade
-  const result = await deploy(strategy, {
+  const result = await deploy('PancakeMasterChefLPStrategy', {
     log: true,
-    from: deployer,  
+    from: deployer
   })
+
+  if (result.newlyDeployed) {
+    const strategy = await getMasterChefStrategyAt(result.address, deployer);
+
+    await strategy.initializeStrategy(
+      storage,
+      underlying,
+      vault, // vaultProxyAddress
+      chef,
+      cake, // cake
+      pid
+    ).then(tx => tx.wait())
+  }
+
+  return result.address
 }
 
 export const deployStrategyProxy = async (
@@ -104,14 +119,14 @@ export const deployVault = async (
   logDeployStart('Vault', deployer);
 
   // Use Proxy deployment to upgrade
-  const result = await deploy('Vault', {
-    log: true,
-    from: deployer,  
-  })
+
+  const factory = await ethers.getContractFactory('Vault', deployer);
+  const result = await factory.deploy()
+  await result.deployed();
 
   logDeployEnd('Vault', result.address);
 
-  if (result.newlyDeployed) {
+  // if (result.newlyDeployed) {
     const vault = await getVaultAt(result.address, deployer);
 
     await vault.initializeVault(
@@ -120,7 +135,8 @@ export const deployVault = async (
       999,
       1000
     ).then(tx => tx.wait())
-  }
+  // }
+  
 
   return result.address
 }

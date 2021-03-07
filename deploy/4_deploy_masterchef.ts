@@ -36,7 +36,7 @@ const func: DeployFunction = async ({
     })
 
     const blockNumber = await ethers.provider.getBlockNumber();
-    const chefResult = await deploy("PancakeChef", {
+    const chefResult = await deploy("MasterChef", {
       from: deployer,
       log: true,
       args: [
@@ -47,6 +47,9 @@ const func: DeployFunction = async ({
         blockNumber
       ]
     })
+
+    // mint some cake, give masterchef ownership
+    // mint some syrup (?), give masterchef ownership
   }
 };
 

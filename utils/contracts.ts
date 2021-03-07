@@ -1,11 +1,17 @@
 import { ethers } from "hardhat";
 import {
   BaseUpgradeableStrategy,
+  BEP20,
   Controller,
   FeeRewardForwarder,
+  IMasterChef,
+  PancakeMasterChefLPStrategy,
+  PancakeRouter,
   RewardToken,
   Storage,
+  StrategyProxy,
   Vault,
+  VaultProxy,
 } from "../typechain";
 
 export const getStorage = async (signer: string) => {
@@ -59,12 +65,45 @@ export const getVaultAt = async (address:string, signer: string) => {
   return vault;
 };
 
-export const getStrategy = async (signer:string) => {
-
-}
+export const getVaultProxyAt = async (address:string, signer: string) => {
+  const vaultProxy = (await ethers.getContractAt(
+    "VaultProxy",
+    address,
+    signer
+  )) as VaultProxy;
+  return vaultProxy;
+};
 
 export const getStrategyAt = async (address:string, signer:string) => {
   const strategy = await ethers.getContractAt('BaseUpgradeableStrategy', address, signer) as BaseUpgradeableStrategy;
-
   return strategy;
+}
+
+export const getStrategyProxyAt = async (address:string, signer: string) => {
+  const strategyProxy = (await ethers.getContractAt(
+    "StrategyProxy",
+    address,
+    signer
+  )) as StrategyProxy;
+  return strategyProxy;
+};
+
+export const getMasterChefStrategyAt = async (address:string, signer:string) => {
+  const strategy = await ethers.getContractAt('PancakeMasterChefLPStrategy', address, signer) as PancakeMasterChefLPStrategy;
+  return strategy
+}
+
+export const getMasterChefAt = async (address:string, signer:string) => {
+  const chef = await ethers.getContractAt('MasterChef', address, signer) as IMasterChef;
+  return chef
+}
+
+export const getRouterAt = async (address:string, signer:string) => {
+  const router = await ethers.getContractAt('PancakeRouter', address, signer) as PancakeRouter;
+  return router
+}
+
+export const getBEP20At = async (address:string, signer:string) => {
+  const token = await ethers.getContractAt("BEP20", address, signer) as BEP20;
+  return token;
 }
