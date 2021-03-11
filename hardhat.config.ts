@@ -86,6 +86,26 @@ const config: HardhatUserConfig = {
       56: "0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63",
       97: "",
     },
+    comptroller: {
+      56: "0xfD36E2c2a6789Db23113685031d7F16329158384",
+      97: "",
+    },
+    dai: {
+      56: "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3",
+      97: "",
+    },
+    vdai: {
+      56: "0x334b3eCB4DCa3593BCCC3c7EBD1A1C1d1780FBF1",
+      97: "",
+    },
+    btcb: {
+      56: "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
+      97: "",
+    },
+    vbtc: {
+      56: "0x882C173bC7Ff3b7786CA16dfeD3DFFfb9Ee7847B",
+      97: "",
+    },
   },
   networks: {
     localhost: {

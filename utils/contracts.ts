@@ -12,6 +12,8 @@ import {
   StrategyProxy,
   Vault,
   VaultProxy,
+  VenusFoldStrategy,
+  VenusWBNBFoldStrategy,
 } from "../typechain";
 
 export const getStorage = async (signer: string) => {
@@ -130,4 +132,44 @@ export const getRouterAt = async (address: string, signer: string) => {
 export const getBEP20At = async (address: string, signer: string) => {
   const token = (await ethers.getContractAt("BEP20", address, signer)) as BEP20;
   return token;
+};
+
+export const getVenusFoldStrategy = async (signer: string) => {
+  const strategy = (await ethers.getContract(
+    "VenusFoldStrategy",
+    signer
+  )) as VenusFoldStrategy;
+  return strategy;
+};
+
+export const getVenusFoldStrategyAt = async (
+  address: string,
+  signer: string
+) => {
+  const strategy = (await ethers.getContractAt(
+    "VenusFoldStrategy",
+    address,
+    signer
+  )) as VenusFoldStrategy;
+  return strategy;
+};
+
+export const getVenusWBNBFoldStrategy = async (signer: string) => {
+  const strategy = (await ethers.getContract(
+    "VenusWBNBFoldStrategy",
+    signer
+  )) as VenusWBNBFoldStrategy;
+  return strategy;
+};
+
+export const getVenusWBNBFoldStrategyAt = async (
+  address: string,
+  signer: string
+) => {
+  const strategy = (await ethers.getContractAt(
+    "VenusWBNBFoldStrategy",
+    address,
+    signer
+  )) as VenusWBNBFoldStrategy;
+  return strategy;
 };

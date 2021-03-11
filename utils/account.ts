@@ -11,6 +11,10 @@ import {
   getVault,
   getVaultAt,
   getVaultProxyAt,
+  getVenusFoldStrategy,
+  getVenusFoldStrategyAt,
+  getVenusWBNBFoldStrategy,
+  getVenusWBNBFoldStrategyAt,
 } from "./contracts";
 
 export const setupAccounts = async () => {
@@ -28,6 +32,8 @@ const setupAccount = async (signer: string) => {
   const Controller = await getController(signer);
   const Vault = await getVault(signer);
   const MasterChefStrategy = await getMasterChefStrategy(signer);
+  const VenusFoldStrategy = await getVenusFoldStrategy(signer);
+  const VenusWBNBFoldStrategy = await getVenusWBNBFoldStrategy(signer);
 
   return {
     address: signer,
@@ -37,5 +43,7 @@ const setupAccount = async (signer: string) => {
     Controller,
     Vault,
     MasterChefStrategy,
+    VenusFoldStrategy,
+    VenusWBNBFoldStrategy,
   };
 };
