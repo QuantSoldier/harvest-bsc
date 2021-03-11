@@ -10,7 +10,7 @@ import "../../lib/@harvest-finance/strategies/upgradability/BaseUpgradeableStrat
 import "../../lib/@harvest-finance/hardworkInterface/IVault.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializable {
+contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializable {
 
   using SafeMath for uint256;
   using SafeBEP20 for IBEP20;
@@ -27,6 +27,7 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
   uint256 public collateralFactorNumerator;
   uint256 public collateralFactorDenominator;
   uint256 public folds;
+  address [] public liquidationPath;
 
   uint256 public borrowMinThreshold = 0;
 
@@ -50,7 +51,8 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
     address _pancakeswap,
     uint256 _collateralFactorNumerator,
     uint256 _collateralFactorDenominator,
-    uint256 _folds
+    uint256 _folds,
+    address[] calldata _liquidationPath
   )
   public initializer {
     BaseUpgradeableStrategy.initialize(
@@ -76,6 +78,7 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
     collateralFactorNumerator = _collateralFactorNumerator;
     collateralFactorDenominator = _collateralFactorDenominator;
     folds = _folds;
+    liquidationPath = _liquidationPath;
 
     // set these tokens to be not salvagable
     unsalvagableTokens[_underlying] = true;
@@ -99,12 +102,12 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
   */
   function investAllUnderlying() public restricted updateSupplyInTheEnd {
     uint256 balance = IBEP20(underlying()).balanceOf(address(this));
-    _supplyBNBInWBNB(balance);
+    _supply(balance);
     for (uint256 i = 0; i < folds; i++) {
       uint256 borrowAmount = balance.mul(collateralFactorNumerator).div(collateralFactorDenominator);
-      _borrowInWBNB(borrowAmount);
+      _borrow(borrowAmount);
       balance = IBEP20(underlying()).balanceOf(address(this));
-      _supplyBNBInWBNB(balance);
+      _supply(balance);
     }
   }
 
@@ -158,7 +161,7 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
     // get some of the underlying
     mustRedeemPartial(amountUnderlying);
 
-    // transfer the amount requested (or the amount we have) back to vault
+    // transfer the amount requested (or the amount we have) back to vault()
     IBEP20(underlying()).safeTransfer(vault(), amountUnderlying);
 
     // invest back to compound
@@ -186,7 +189,7 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
   * DOES NOT ensure that the strategy cUnderlying balance becomes 0.
   */
   function redeemMaximum() internal {
-    redeemMaximumWBNBWithLoan(
+    redeemMaximumWithLoan(
       collateralFactorNumerator,
       collateralFactorDenominator,
       borrowMinThreshold
@@ -232,14 +235,11 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
     uint256 amountOutMin = 1;
     IBEP20(address(xvs)).safeApprove(address(pancakeswapRouterV2), 0);
     IBEP20(address(xvs)).safeApprove(address(pancakeswapRouterV2), balance);
-    address[] memory path = new address[](2);
-    path[0] = address(xvs);
-    path[1] = underlying();
 
     IUniswapV2Router02(pancakeswapRouterV2).swapExactTokensForTokens(
       balance,
       amountOutMin,
-      path,
+      liquidationPath,
       address(this),
       block.timestamp
     );
