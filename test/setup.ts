@@ -1,48 +1,86 @@
 import { BigNumber, BigNumberish } from "ethers";
 import { deployments, getNamedAccounts } from "hardhat";
-import { setupAccounts, setupCakeAccounts } from "../utils/account";
+import { setupAccounts } from "../utils/account";
+import {
+  deployMasterChefStrategyProxy,
+  deployVaultProxy,
+} from "../utils/deploy";
 
 import * as chai from "chai";
 import { waffleChai } from "@ethereum-waffle/chai";
-import { deployMasterChefStrategy, deployStrategyProxy, deployVault, deployVaultProxy } from "../utils/deploy";
+import { getMasterChefStrategyAt, getVaultAt } from "../utils/contracts";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
-  await deployments.fixture(["Storage", "Token", "Forwarder", "Controller"]);
+  await deployments.fixture();
   const accounts = await setupAccounts();
   return accounts;
 });
 
 export const setupCakeTest = deployments.createFixture(async () => {
-  await deployments.fixture(["Storage", "Token", "Forwarder", "Controller"]);
-  const accounts = await setupAccounts();
-  const {cake, cakeLp} = await getNamedAccounts();
+  await deployments.fixture();
+  const { deployer } = await setupAccounts();
+  const { Storage, Vault, MasterChefStrategy } = deployer;
+  const { cake } = await getNamedAccounts();
 
-  const cakeVault = await deployVault(accounts.deployer.Storage.address, cake);
-  const cakeVaultProxy = await deployVaultProxy(cakeVault);
-  const cakeStrategy = await deployMasterChefStrategy(accounts.deployer.Storage.address, cake, cakeVaultProxy, 0);
-  const cakeStrategyProxy = await deployStrategyProxy(cakeStrategy)
+  const cakeVaultProxy = await deployVaultProxy(
+    Storage.address,
+    Vault.address,
+    cake
+  );
+  const cakeStrategyProxy = await deployMasterChefStrategyProxy(
+    Storage.address,
+    Vault.address,
+    MasterChefStrategy.address,
+    cake,
+    0
+  );
 
-  const cakeLpVault = await deployVault(accounts.deployer.Storage.address, cake);
-  const cakeLpVaultProxy = await deployVaultProxy(cakeLpVault);
-  const cakeLpStrategy = await deployMasterChefStrategy(accounts.deployer.Storage.address, cakeLp, cakeLpVaultProxy, 1);
-  const cakeLpStrategyProxy = await deployStrategyProxy(cakeLpStrategy)
-
-  const cakeAccounts = await setupCakeAccounts(
-    cakeVault, 
-    cakeVaultProxy, 
-    cakeStrategy, 
-    cakeStrategyProxy, 
-    cakeLpVault, 
-    cakeLpVaultProxy,
-    cakeLpStrategy,
-    cakeLpStrategyProxy
+  const CakeVault = await getVaultAt(cakeVaultProxy, deployer.address);
+  const CakeStrategy = await getMasterChefStrategyAt(
+    cakeStrategyProxy,
+    deployer.address
   );
 
   return {
     deployer: {
-      ...accounts.deployer,
-      ...cakeAccounts.deployer
-    }
-  }
-})
+      ...deployer,
+      CakeVault,
+      CakeStrategy,
+    },
+  };
+});
+
+export const setupCakeLpTest = deployments.createFixture(async () => {
+  await deployments.fixture();
+  const { deployer } = await setupAccounts();
+  const { Storage, Vault, MasterChefStrategy } = deployer;
+  const { cakeLp } = await getNamedAccounts();
+
+  const cakeVaultProxy = await deployVaultProxy(
+    Storage.address,
+    Vault.address,
+    cakeLp
+  );
+  const cakeStrategyProxy = await deployMasterChefStrategyProxy(
+    Storage.address,
+    Vault.address,
+    MasterChefStrategy.address,
+    cakeLp,
+    1
+  );
+
+  const CakeVault = await getVaultAt(cakeVaultProxy, deployer.address);
+  const CakeStrategy = await getMasterChefStrategyAt(
+    cakeStrategyProxy,
+    deployer.address
+  );
+
+  return {
+    deployer: {
+      ...deployer,
+      CakeVault,
+      CakeStrategy,
+    },
+  };
+});
