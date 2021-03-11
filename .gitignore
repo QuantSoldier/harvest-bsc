@@ -13,6 +13,7 @@ yarn.lock
 /build
 /typechain
 /deployments/localhost
+/deployments/testnet
 
 # credentials
 secrets.json
@@ -27,4 +28,3 @@ secrets.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-

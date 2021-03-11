@@ -10,7 +10,7 @@ import {
 
 import * as chai from "chai";
 import { waffleChai } from "@ethereum-waffle/chai";
-import { getMasterChefStrategyAt, getVaultAt } from "../utils/contracts";
+import { getMasterChefStrategyAt, getVaultAt, getVenusStrategyAt } from "../utils/contracts";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
@@ -128,13 +128,13 @@ export const setupVenusTest = deployments.createFixture(async () => {
   // );
 
   const DaiVault = await getVaultAt(daiVaultProxy, deployer.address);
-  const DaiStrategy = await getMasterChefStrategyAt(
+  const DaiStrategy = await getVenusStrategyAt(
     daiStrategyProxy,
     deployer.address
   );
 
   // const BtcbVault = await getVaultAt(btcbVaultProxy, deployer.address);
-  // const BtcbStrategy = await getMasterChefStrategyAt(
+  // const BtcbStrategy = await getVenusStrategyAt(
   //   btcbStrategyProxy,
   //   deployer.address
   // );
