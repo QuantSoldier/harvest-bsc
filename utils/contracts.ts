@@ -20,7 +20,11 @@ export const getStorage = async (signer: string) => {
 };
 
 export const getStorageAt = async (address: string, signer: string) => {
-  const storage = (await ethers.getContractAt("Storage", address, signer)) as Storage;
+  const storage = (await ethers.getContractAt(
+    "Storage",
+    address,
+    signer
+  )) as Storage;
   return storage;
 };
 
@@ -49,23 +53,16 @@ export const getController = async (signer: string) => {
 };
 
 export const getVault = async (signer: string) => {
-  const vault = (await ethers.getContract(
-    "Vault",
-    signer
-  )) as Vault;
+  const vault = (await ethers.getContract("Vault", signer)) as Vault;
   return vault;
 };
 
-export const getVaultAt = async (address:string, signer: string) => {
-  const vault = (await ethers.getContractAt(
-    "Vault",
-    address,
-    signer
-  )) as Vault;
+export const getVaultAt = async (address: string, signer: string) => {
+  const vault = (await ethers.getContractAt("Vault", address, signer)) as Vault;
   return vault;
 };
 
-export const getVaultProxyAt = async (address:string, signer: string) => {
+export const getVaultProxyAt = async (address: string, signer: string) => {
   const vaultProxy = (await ethers.getContractAt(
     "VaultProxy",
     address,
@@ -74,12 +71,16 @@ export const getVaultProxyAt = async (address:string, signer: string) => {
   return vaultProxy;
 };
 
-export const getStrategyAt = async (address:string, signer:string) => {
-  const strategy = await ethers.getContractAt('BaseUpgradeableStrategy', address, signer) as BaseUpgradeableStrategy;
+export const getStrategyAt = async (address: string, signer: string) => {
+  const strategy = (await ethers.getContractAt(
+    "BaseUpgradeableStrategy",
+    address,
+    signer
+  )) as BaseUpgradeableStrategy;
   return strategy;
-}
+};
 
-export const getStrategyProxyAt = async (address:string, signer: string) => {
+export const getStrategyProxyAt = async (address: string, signer: string) => {
   const strategyProxy = (await ethers.getContractAt(
     "StrategyProxy",
     address,
@@ -88,22 +89,45 @@ export const getStrategyProxyAt = async (address:string, signer: string) => {
   return strategyProxy;
 };
 
-export const getMasterChefStrategyAt = async (address:string, signer:string) => {
-  const strategy = await ethers.getContractAt('PancakeMasterChefLPStrategy', address, signer) as PancakeMasterChefLPStrategy;
-  return strategy
-}
+export const getMasterChefStrategy = async (signer: string) => {
+  const strategy = (await ethers.getContract(
+    "PancakeMasterChefLPStrategy",
+    signer
+  )) as PancakeMasterChefLPStrategy;
+  return strategy;
+};
 
-export const getMasterChefAt = async (address:string, signer:string) => {
-  const chef = await ethers.getContractAt('MasterChef', address, signer) as IMasterChef;
-  return chef
-}
+export const getMasterChefStrategyAt = async (
+  address: string,
+  signer: string
+) => {
+  const strategy = (await ethers.getContractAt(
+    "PancakeMasterChefLPStrategy",
+    address,
+    signer
+  )) as PancakeMasterChefLPStrategy;
+  return strategy;
+};
 
-export const getRouterAt = async (address:string, signer:string) => {
-  const router = await ethers.getContractAt('PancakeRouter', address, signer) as PancakeRouter;
-  return router
-}
+export const getMasterChefAt = async (address: string, signer: string) => {
+  const chef = (await ethers.getContractAt(
+    "MasterChef",
+    address,
+    signer
+  )) as IMasterChef;
+  return chef;
+};
 
-export const getBEP20At = async (address:string, signer:string) => {
-  const token = await ethers.getContractAt("BEP20", address, signer) as BEP20;
+export const getRouterAt = async (address: string, signer: string) => {
+  const router = (await ethers.getContractAt(
+    "PancakeRouter",
+    address,
+    signer
+  )) as PancakeRouter;
+  return router;
+};
+
+export const getBEP20At = async (address: string, signer: string) => {
+  const token = (await ethers.getContractAt("BEP20", address, signer)) as BEP20;
   return token;
-}
+};
