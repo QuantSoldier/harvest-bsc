@@ -30,12 +30,13 @@ const func: DeployFunction = async ({
   });
 
   if (result.newlyDeployed) {
-    await run("verify:verify", {
-      address: result.address,
-      constructorArguments: [storage.address, tokenAddress],
-    })
+    if (network.live) {
+      await run("verify:verify", {
+        address: result.address,
+      })
+    }
   }
 };
 
 export default func;
-func.tags = ["Forwarder"];
+func.tags = ["Forwarder", "Setup"];

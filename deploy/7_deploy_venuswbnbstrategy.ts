@@ -17,11 +17,13 @@ const func: DeployFunction = async ({
   });
 
   if (result.newlyDeployed) {
-    await run("verify:verify", {
-      address: result.address,
-    })
+    if (network.live) {
+      await run("verify:verify", {
+        address: result.address,
+      })
+    }
   }
 };
 
 export default func;
-func.tags = ["Strategy", "Mainnet", "Testnet"];
+func.tags = ["Strategy", "Mainnet", "Testnet", "Setup"];
