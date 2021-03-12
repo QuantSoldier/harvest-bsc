@@ -3,6 +3,8 @@ import {
   PancakeMasterChefLPStrategy,
   StrategyProxy,
   Vault,
+  VenusFoldStrategy,
+  VenusWBNBFoldStrategy,
 } from "../typechain";
 import {
   getMasterChefStrategyAt,
@@ -10,6 +12,8 @@ import {
   getStorageAt,
   getStrategyAt,
   getVaultAt,
+  getVenusFoldStrategyAt,
+  getVenusWBNBFoldStrategyAt,
 } from "./contracts";
 import { logDeployEnd, logDeployStart } from "./log";
 
@@ -126,3 +130,89 @@ export const deployVaultProxy = async (
 };
 
 export const upgradeVaultProxy = () => {};
+
+export const deployVenusStrategyProxy = async (
+  storage: string,
+  vault: string,
+  strategy: string,
+  underlying: string,
+  vtoken: string,
+  collateralFactorNumerator: number,
+  collateralFactorDenominator: number,
+  folds: number,
+  liquidationPath: string[]
+) => {
+  const { deploy } = deployments;
+  const { deployer, comptroller, router, venus } = await getNamedAccounts();
+
+  const result = await deploy("StrategyProxy", {
+    log: true,
+    from: deployer,
+    args: [strategy],
+  });
+
+  const strategyProxy = (await ethers.getContractAt(
+    "VenusFoldStrategy",
+    result.address,
+    deployer
+  )) as VenusFoldStrategy;
+  await strategyProxy
+    .initializeStrategy(
+      storage,
+      underlying,
+      vtoken,
+      vault, // vaultProxyAddress
+      comptroller,
+      venus,
+      router,
+      collateralFactorNumerator,
+      collateralFactorDenominator,
+      folds,
+      liquidationPath
+    )
+    .then((tx) => tx.wait());
+
+  return result.address;
+};
+
+export const deployVenusWBNBStrategyProxy = async (
+  storage: string,
+  vault: string,
+  strategy: string,
+  underlying: string,
+  vtoken: string,
+  collateralFactorNumerator: number,
+  collateralFactorDenominator: number,
+  folds: number
+) => {
+  const { deploy } = deployments;
+  const { deployer, comptroller, router, venus } = await getNamedAccounts();
+
+  const result = await deploy("StrategyProxy", {
+    log: true,
+    from: deployer,
+    args: [strategy],
+  });
+
+  const strategyProxy = (await ethers.getContractAt(
+    "VenusWBNBFoldStrategy",
+    result.address,
+    deployer
+  )) as VenusWBNBFoldStrategy;
+  await strategyProxy
+    .initializeStrategy(
+      storage,
+      underlying,
+      vtoken,
+      vault, // vaultProxyAddress
+      comptroller,
+      venus,
+      router,
+      collateralFactorNumerator,
+      collateralFactorDenominator,
+      folds
+    )
+    .then((tx) => tx.wait());
+
+  return result.address;
+};

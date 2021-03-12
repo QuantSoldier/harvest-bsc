@@ -1,5 +1,6 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { Storage, RewardToken } from "../typechain";
+import { run } from "hardhat";
 
 const func: DeployFunction = async ({
   getNamedAccounts,
@@ -29,7 +30,10 @@ const func: DeployFunction = async ({
   });
 
   if (result.newlyDeployed) {
-    //
+    await run("verify:verify", {
+      address: result.address,
+      constructorArguments: [storage.address, tokenAddress],
+    })
   }
 };
 

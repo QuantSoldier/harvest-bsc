@@ -4,11 +4,13 @@ import { setupAccounts } from "../utils/account";
 import {
   deployMasterChefStrategyProxy,
   deployVaultProxy,
+  deployVenusStrategyProxy,
+  deployVenusWBNBStrategyProxy,
 } from "../utils/deploy";
 
 import * as chai from "chai";
 import { waffleChai } from "@ethereum-waffle/chai";
-import { getMasterChefStrategyAt, getVaultAt } from "../utils/contracts";
+import { getMasterChefStrategyAt, getVaultAt, getVenusStrategyAt } from "../utils/contracts";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
@@ -30,7 +32,7 @@ export const setupCakeTest = deployments.createFixture(async () => {
   );
   const cakeStrategyProxy = await deployMasterChefStrategyProxy(
     Storage.address,
-    Vault.address,
+    cakeVaultProxy,
     MasterChefStrategy.address,
     cake,
     0
@@ -64,7 +66,7 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
   );
   const cakeStrategyProxy = await deployMasterChefStrategyProxy(
     Storage.address,
-    Vault.address,
+    cakeVaultProxy,
     MasterChefStrategy.address,
     cakeLp,
     1
@@ -81,6 +83,69 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
       ...deployer,
       CakeVault,
       CakeStrategy,
+    },
+  };
+});
+
+export const setupVenusTest = deployments.createFixture(async () => {
+  await deployments.fixture();
+  const { deployer } = await setupAccounts();
+  const { Storage, Vault, VenusFoldStrategy } = deployer;
+  const { dai, btcb, vdai, vbtc, wbnb, venus } = await getNamedAccounts();
+
+  const daiVaultProxy = await deployVaultProxy(
+    Storage.address,
+    Vault.address,
+    dai
+  );
+  const daiStrategyProxy = await deployVenusStrategyProxy(
+    Storage.address,
+    daiVaultProxy,
+    VenusFoldStrategy.address,
+    dai,
+    vdai,
+    500,
+    1000,
+    5,
+    [venus, wbnb, dai]
+  );
+
+  // const btcbVaultProxy = await deployVaultProxy(
+  //   Storage.address,
+  //   Vault.address,
+  //   btcb
+  // );
+  // const btcbStrategyProxy = await deployVenusStrategyProxy(
+  //   Storage.address,
+  //   btcbVaultProxy,
+  //   VenusFoldStrategy.address,
+  //   btcb,
+  //   vbtc,
+  //   300,
+  //   1000,
+  //   5,
+  //   [venus, wbnb, btcb]
+  // );
+
+  const DaiVault = await getVaultAt(daiVaultProxy, deployer.address);
+  const DaiStrategy = await getVenusStrategyAt(
+    daiStrategyProxy,
+    deployer.address
+  );
+
+  // const BtcbVault = await getVaultAt(btcbVaultProxy, deployer.address);
+  // const BtcbStrategy = await getVenusStrategyAt(
+  //   btcbStrategyProxy,
+  //   deployer.address
+  // );
+
+  return {
+    deployer: {
+      ...deployer,
+      DaiVault,
+      DaiStrategy,
+      // BtcbVault,
+      // BtcbStrategy,
     },
   };
 });

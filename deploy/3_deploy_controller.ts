@@ -1,5 +1,6 @@
 import { DeployFunction } from "hardhat-deploy/types";
 import { FeeRewardForwarder, Storage } from "../typechain";
+import { run } from "hardhat";
 
 const func: DeployFunction = async ({
   getNamedAccounts,
@@ -24,6 +25,10 @@ const func: DeployFunction = async ({
 
   if (result.newlyDeployed) {
     await storage.setController(result.address).then((tx) => tx.wait());
+    await run("verify:verify", {
+      address: result.address,
+      constructorArguments: [storage.address, forwarder.address],
+    })
   }
 };
 

@@ -1,5 +1,4 @@
 import { DeployFunction } from "hardhat-deploy/types";
-import { FeeRewardForwarder, Storage } from "../typechain";
 import { run } from "hardhat";
 
 const func: DeployFunction = async ({
@@ -9,10 +8,10 @@ const func: DeployFunction = async ({
   ethers,
 }) => {
   const { deploy } = deployments;
-  const { deployer, cake, chef } = await getNamedAccounts();
+  const { deployer } = await getNamedAccounts();
 
   // Use Proxy deployment to upgrade
-  const result = await deploy("PancakeMasterChefLPStrategy", {
+  const result = await deploy("VenusFoldStrategy", {
     log: true,
     from: deployer,
   });
@@ -25,4 +24,4 @@ const func: DeployFunction = async ({
 };
 
 export default func;
-func.tags = ["Vault", "Mainnet", "Testnet"];
+func.tags = ["Strategy", "Mainnet", "Testnet"];
