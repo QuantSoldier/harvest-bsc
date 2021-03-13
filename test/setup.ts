@@ -10,7 +10,7 @@ import {
 
 import * as chai from "chai";
 import { waffleChai } from "@ethereum-waffle/chai";
-import { getMasterChefStrategyAt, getVaultAt, getVenusStrategyAt } from "../utils/contracts";
+import { getMasterChefStrategyAt, getVaultAt, getVenusFoldStrategyAt } from "../utils/contracts";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
@@ -110,42 +110,17 @@ export const setupVenusTest = deployments.createFixture(async () => {
     [venus, wbnb, dai]
   );
 
-  // const btcbVaultProxy = await deployVaultProxy(
-  //   Storage.address,
-  //   Vault.address,
-  //   btcb
-  // );
-  // const btcbStrategyProxy = await deployVenusStrategyProxy(
-  //   Storage.address,
-  //   btcbVaultProxy,
-  //   VenusFoldStrategy.address,
-  //   btcb,
-  //   vbtc,
-  //   300,
-  //   1000,
-  //   5,
-  //   [venus, wbnb, btcb]
-  // );
-
   const DaiVault = await getVaultAt(daiVaultProxy, deployer.address);
-  const DaiStrategy = await getVenusStrategyAt(
+  const DaiStrategy = await getVenusFoldStrategyAt(
     daiStrategyProxy,
     deployer.address
   );
-
-  // const BtcbVault = await getVaultAt(btcbVaultProxy, deployer.address);
-  // const BtcbStrategy = await getVenusStrategyAt(
-  //   btcbStrategyProxy,
-  //   deployer.address
-  // );
 
   return {
     deployer: {
       ...deployer,
       DaiVault,
       DaiStrategy,
-      // BtcbVault,
-      // BtcbStrategy,
     },
   };
 });

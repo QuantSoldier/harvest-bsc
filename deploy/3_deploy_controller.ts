@@ -25,12 +25,14 @@ const func: DeployFunction = async ({
 
   if (result.newlyDeployed) {
     await storage.setController(result.address).then((tx) => tx.wait());
-    await run("verify:verify", {
-      address: result.address,
-      constructorArguments: [storage.address, forwarder.address],
-    })
+    if (network.live) {
+      await run("verify:verify", {
+        address: result.address,
+        constructorArguments: [storage.address, forwarder.address],
+      })
+    }
   }
 };
 
 export default func;
-func.tags = ["Controller"];
+func.tags = ["Controller", "Setup"];

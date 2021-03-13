@@ -92,7 +92,7 @@ const config: HardhatUserConfig = {
     },
     dai: {
       56: "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3",
-      97: "",
+      97: "0xEC5dCb5Dbf4B114C9d0F65BcCAb49EC54F6A0867",
     },
     vdai: {
       56: "0x334b3eCB4DCa3593BCCC3c7EBD1A1C1d1780FBF1",
@@ -105,6 +105,10 @@ const config: HardhatUserConfig = {
     vbtc: {
       56: "0x882C173bC7Ff3b7786CA16dfeD3DFFfb9Ee7847B",
       97: "",
+    },
+    busd: {
+      56: "",
+      97: "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee",
     },
   },
   networks: {

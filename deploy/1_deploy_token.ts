@@ -18,12 +18,9 @@ const func: DeployFunction = async ({
     });
 
     if (result.newlyDeployed) {
-      await run("verify:verify", {
-        address: result.address,
-      })
     }
   }
 };
 
 export default func;
-func.tags = ["Token"];
+func.tags = ["Token", "Setup"];
