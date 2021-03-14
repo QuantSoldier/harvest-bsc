@@ -15,6 +15,7 @@ import {
   getVaultAt,
   getVenusFoldStrategyAt,
 } from "../utils/contracts";
+import { addVaultAndStrategy } from "../utils";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
@@ -26,7 +27,7 @@ export const setupDeployTest = deployments.createFixture(async () => {
 export const setupCakeTest = deployments.createFixture(async () => {
   await deployments.fixture();
   const { deployer } = await setupAccounts();
-  const { Storage, Vault, MasterChefStrategy } = deployer;
+  const { Controller, Storage, Vault, MasterChefStrategy } = deployer;
   const { cake } = await getNamedAccounts();
 
   const cakeVaultProxy = await deployVaultProxy(
@@ -42,6 +43,13 @@ export const setupCakeTest = deployments.createFixture(async () => {
     0
   );
 
+  await addVaultAndStrategy(
+    Controller.address,
+    deployer.address,
+    cakeVaultProxy,
+    cakeStrategyProxy
+  );
+
   const strategyAccounts = await setupMasterChefAccounts(
     cakeVaultProxy,
     cakeStrategyProxy
@@ -51,8 +59,8 @@ export const setupCakeTest = deployments.createFixture(async () => {
 
 export const setupCakeLpTest = deployments.createFixture(async () => {
   await deployments.fixture();
-  const accounts = await setupAccounts();
-  const { Storage, Vault, MasterChefStrategy } = accounts.deployer;
+  const { deployer } = await setupAccounts();
+  const { Controller, Storage, Vault, MasterChefStrategy } = deployer;
   const { cakeLp } = await getNamedAccounts();
 
   const cakeVaultProxy = await deployVaultProxy(
@@ -66,6 +74,13 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
     MasterChefStrategy.address,
     cakeLp,
     1
+  );
+
+  await addVaultAndStrategy(
+    Controller.address,
+    deployer.address,
+    cakeVaultProxy,
+    cakeStrategyProxy
   );
 
   const strategyAccounts = await setupMasterChefAccounts(

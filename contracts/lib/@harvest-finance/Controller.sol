@@ -55,28 +55,6 @@ contract Controller is IController, Governable {
         _;
     }
 
-    modifier confirmSharePrice(
-        address vault,
-        uint256 hint,
-        uint256 deviationNumerator,
-        uint256 deviationDenominator
-    ) {
-        uint256 sharePrice = IVault(vault).getPricePerFullShare();
-        uint256 resolution = 1e18;
-        if (sharePrice > hint) {
-            require(
-                sharePrice.mul(resolution).div(hint) <= deviationNumerator.mul(resolution).div(deviationDenominator),
-                "share price deviation"
-            );
-        } else {
-            require(
-                hint.mul(resolution).div(sharePrice) <= deviationNumerator.mul(resolution).div(deviationDenominator),
-                "share price deviation"
-            );
-        }
-        _;
-    }
-
     mapping (address => bool) public hardWorkers;
 
     modifier onlyHardWorkerOrGovernance() {
@@ -86,9 +64,7 @@ contract Controller is IController, Governable {
     }
 
     constructor(address _storage, address _feeRewardForwarder)
-        Governable(_storage) 
-        public 
-    {
+    Governable(_storage) public {
         require(_feeRewardForwarder != address(0), "feeRewardForwarder should not be empty");
         feeRewardForwarder = _feeRewardForwarder;
     }
@@ -127,27 +103,11 @@ contract Controller is IController, Governable {
         require(_strategy != address(0), "new strategy shouldn't be empty");
 
         vaults[_vault] = true;
-        // no need to protect against sandwich, because there will be no call to withdrawAll
-        // as the vault and strategy is brand new
+        // adding happens while setting
         IVault(_vault).setStrategy(_strategy);
     }
 
-    function getPricePerFullShare(address _vault) public view returns(uint256) {
-        return IVault(_vault).getPricePerFullShare();
-    }
-
-    function doHardWork(
-        address _vault,
-        uint256 hint,
-        uint256 deviationNumerator,
-        uint256 deviationDenominator
-    ) 
-        external 
-        override
-        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-        onlyHardWorkerOrGovernance
-        validVault(_vault) 
-    {
+    function doHardWork(address _vault) external override onlyHardWorkerOrGovernance validVault(_vault) {
         uint256 oldSharePrice = IVault(_vault).getPricePerFullShare();
         IVault(_vault).doHardWork();
         if (address(hardRewards) != address(0)) {
@@ -163,34 +123,9 @@ contract Controller is IController, Governable {
         );
     }
 
-    function withdrawAll(
-        address _vault,
-        uint256 hint,
-        uint256 deviationNumerator,
-        uint256 deviationDenominator
-    ) 
-        external
-        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-        onlyGovernance
-        validVault(_vault)
-    {
-        IVault(_vault).withdrawAll();
-    }
-
-    function setStrategy(
-        address _vault,
-        address strategy,
-        uint256 hint,
-        uint256 deviationNumerator,
-        uint256 deviationDenominator
-    ) 
-        external
-        confirmSharePrice(_vault, hint, deviationNumerator, deviationDenominator)
-        onlyGovernance
-        validVault(_vault)
-    {
-        IVault(_vault).setStrategy(strategy);
-    }
+    // function rebalance(address _vault) external onlyHardWorkerOrGovernance validVault(_vault) {
+    //     IVault(_vault).rebalance();
+    // }
 
     function setHardRewards(address _hardRewards) external onlyGovernance {
         hardRewards = HardRewards(_hardRewards);

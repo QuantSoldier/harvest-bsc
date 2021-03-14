@@ -55,6 +55,15 @@ export const getController = async (signer: string) => {
   return controller;
 };
 
+export const getControllerAt = async (address: string, signer: string) => {
+  const controller = (await ethers.getContractAt(
+    "Controller",
+    address,
+    signer
+  )) as Controller;
+  return controller;
+};
+
 export const getVault = async (signer: string) => {
   const vault = (await ethers.getContract("Vault", signer)) as Vault;
   return vault;

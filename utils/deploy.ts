@@ -1,20 +1,10 @@
 import { deployments, ethers, getNamedAccounts } from "hardhat";
 import {
   PancakeMasterChefLPStrategy,
-  StrategyProxy,
   Vault,
   VenusFoldStrategy,
   VenusWBNBFoldStrategy,
 } from "../typechain";
-import {
-  getMasterChefStrategyAt,
-  getStorage,
-  getStorageAt,
-  getStrategyAt,
-  getVaultAt,
-  getVenusFoldStrategyAt,
-  getVenusWBNBFoldStrategyAt,
-} from "./contracts";
 import { logDeployEnd, logDeployStart } from "./log";
 
 export const deployPool = async (

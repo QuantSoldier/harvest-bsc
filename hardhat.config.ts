@@ -5,7 +5,6 @@ import "hardhat-deploy-ethers";
 import "hardhat-spdx-license-identifier";
 import "hardhat-typechain";
 import "@nomiclabs/hardhat-etherscan";
-import "@openzeppelin/test-helpers/configure";
 import secrets from "./secrets.json";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {

@@ -1,4 +1,9 @@
-import { getBEP20At, getVaultAt } from "./contracts";
+import {
+  getBEP20At,
+  getController,
+  getControllerAt,
+  getVaultAt,
+} from "./contracts";
 
 export const depositVault = async (
   farmer: string,
@@ -11,4 +16,17 @@ export const depositVault = async (
 
   await tokenContract.approve(vault, amount);
   await vaultContract.deposit(amount);
+};
+
+export const addVaultAndStrategy = async (
+  controller: string,
+  signer: string,
+  vault: string,
+  strategy: string
+) => {
+  const controllerContract = await getControllerAt(controller, signer);
+
+  await controllerContract
+    .addVaultAndStrategy(vault, strategy)
+    .then((tx) => tx.wait());
 };

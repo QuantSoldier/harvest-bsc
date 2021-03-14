@@ -42,12 +42,12 @@ describe("PancakeMasterChefLp", () => {
     for (let i = 0; i < hours; i++) {
       console.log("loop", i);
       const sharePrice = await CakeVault.getPricePerFullShare();
-      // await Controller.doHardWork(CakeVault.address);
+      await Controller.doHardWork(CakeVault.address);
       const newSharePrice = await CakeVault.getPricePerFullShare();
 
-      console.log("old shareprice: ", sharePrice);
-      console.log("new shareprice: ", newSharePrice);
-      console.log("growth: ", newSharePrice.div(sharePrice));
+      console.log("old shareprice: ", sharePrice.toString());
+      console.log("new shareprice: ", newSharePrice.toString());
+      console.log("growth: ", newSharePrice.div(sharePrice).toString());
 
       await advanceNBlocks(blocksPerHours);
     }
