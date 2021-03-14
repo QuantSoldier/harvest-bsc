@@ -12,18 +12,17 @@ import "../../lib/@harvest-finance/hardworkInterface/IStrategy.sol";
 import "./interface/WBNB.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
-
-contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
+contract VenusInteractorInitializable is Initializable {
 
   using SafeMath for uint256;
   using SafeBEP20 for IBEP20;
 
   IBEP20 public underlyingToken;
-  IBEP20 public _wbnb = IBEP20(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
+  address payable public _wbnb;
   CompleteVToken public vtoken;
   ComptrollerInterface public comptroller;
 
-  constructor() public ReentrancyGuard() {
+  constructor() public {
   }
 
   function initialize(
@@ -35,12 +34,14 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
     comptroller = ComptrollerInterface(_comptroller);
 
     underlyingToken = IBEP20(_underlying);
+    _wbnb = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
     vtoken = CompleteVToken(_vtoken);
 
     // Enter the market
     address[] memory vTokens = new address[](1);
     vTokens[0] = _vtoken;
     comptroller.enterMarkets(vTokens);
+
   }
 
   /**
@@ -51,13 +52,14 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
   * If we the "amount" we want to supply is less than balance, then
   * only supply that amount.
   */
-  function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
+  function _supplyBNBInWBNB(uint256 amountInWBNB) internal {
     // underlying here is WETH
     uint256 balance = underlyingToken.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
     }
-    WBNB wbnb = WBNB(payable(address(_wbnb)));
+    WBNB wbnb = WBNB(_wbnb);
+    address _wbnbAddress = address(_wbnb);
     wbnb.withdraw(balance); // Unwrapping
     IVBNB(address(vtoken)).mint.value(balance)();
   }
@@ -66,9 +68,9 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
   * Redeems Ether from Compound
   * receives Ether. Wrap all the ether that is in this contract.
   */
-  function _redeemBNBInvTokens(uint256 amountVTokens) internal nonReentrant {
+  function _redeemBNBInvTokens(uint256 amountVTokens) internal {
     _redeemInVTokens(amountVTokens);
-    WBNB wbnb = WBNB(payable(address(_wbnb)));
+    WBNB wbnb = WBNB(_wbnb);
     wbnb.deposit.value(address(this).balance)();
   }
 
@@ -103,7 +105,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
     // Borrow ETH, wraps into WETH
     uint256 result = vtoken.borrow(amountUnderlying);
     require(result == 0, "Borrow failed");
-    WBNB wbnb = WBNB(payable(address(_wbnb)));
+    WBNB wbnb = WBNB(_wbnb);
     wbnb.deposit.value(address(this).balance)();
   }
 
@@ -121,7 +123,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
   * Repays a loan in ETH
   */
   function _repayInWBNB(uint256 amountUnderlying) internal {
-    WBNB wbnb = WBNB(payable(address(_wbnb)));
+    WBNB wbnb = WBNB(_wbnb);
     wbnb.withdraw(amountUnderlying); // Unwrapping
     IVBNB(address(vtoken)).repayBorrow.value(amountUnderlying)();
   }
@@ -150,7 +152,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
   function redeemUnderlyingInWBNB(uint256 amountUnderlying) internal {
     if (amountUnderlying > 0) {
       _redeemUnderlying(amountUnderlying);
-      WBNB wbnb = WBNB(payable(address(_wbnb)));
+      WBNB wbnb = WBNB(_wbnb);
       wbnb.deposit.value(address(this).balance)();
     }
   }
@@ -192,11 +194,11 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
 
       // redeem just as much as needed to repay the loan
       uint256 wantToRedeem = supplied.sub(requiredCollateral);
-      redeemUnderlyingInWBNB(SafeMath.min(wantToRedeem, available));
+      _redeemUnderlying(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
       uint256 balance = underlyingToken.balanceOf(address(this));
-      _repayInWBNB(SafeMath.min(borrowed, balance));
+      _repay(SafeMath.min(borrowed, balance));
 
       // update the parameters
       available = vtoken.getCash();
@@ -205,7 +207,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
     }
 
     // redeem the most we can redeem
-    redeemUnderlyingInWBNB(SafeMath.min(available, supplied));
+    _redeemUnderlying(SafeMath.min(available, supplied));
   }
 
   function redeemMaximumWBNBWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
@@ -224,11 +226,11 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
 
       // redeem just as much as needed to repay the loan
       uint256 wantToRedeem = supplied.sub(requiredCollateral);
-      _redeemUnderlying(SafeMath.min(wantToRedeem, available));
+      redeemUnderlyingInWBNB(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
       uint256 balance = underlyingToken.balanceOf(address(this));
-      _repay(SafeMath.min(borrowed, balance));
+      _repayInWBNB(SafeMath.min(borrowed, balance));
 
       // update the parameters
       available = vtoken.getCash();
@@ -237,7 +239,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuard {
     }
 
     // redeem the most we can redeem
-    _redeemUnderlying(SafeMath.min(available, supplied));
+    redeemUnderlyingInWBNB(SafeMath.min(available, supplied));
   }
 
   function getLiquidity() external view returns(uint256) {

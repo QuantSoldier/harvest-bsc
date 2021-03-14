@@ -126,10 +126,6 @@ contract Vault is ERC20Upgradeable, IVault, IUpgradeSource, ControllableInit, Va
     invest();
     IStrategy(strategy()).doHardWork();
     uint256 sharePriceAfterHardWork = getPricePerFullShare();
-
-    if (!allowSharePriceDecrease()) {
-      require(sharePriceBeforeHardWork <= sharePriceAfterHardWork, "Share price should not decrease");
-    }
   }
 
   /*

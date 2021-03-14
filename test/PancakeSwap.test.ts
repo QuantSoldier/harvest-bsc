@@ -7,12 +7,12 @@ describe("PancakeMasterChefLp", () => {
   it("deploys the Cake Vault correctly", async () => {
     const { cake } = await getNamedAccounts();
     const { deployer } = await setupCakeTest();
-    const { CakeVault } = deployer;
+    const { Vault } = deployer;
 
-    const cakeGovernance = await CakeVault.governance();
-    const cakeSymbol = await CakeVault.symbol();
-    const cakeUnderlying = await CakeVault.underlying();
-    const cakeUnderlyingUnit = await CakeVault.underlyingUnit();
+    const cakeGovernance = await Vault.governance();
+    const cakeSymbol = await Vault.symbol();
+    const cakeUnderlying = await Vault.underlying();
+    const cakeUnderlyingUnit = await Vault.underlyingUnit();
 
     expect(cakeGovernance).eq(deployer.address);
     expect(cakeSymbol).eq("bfCake");
@@ -23,12 +23,12 @@ describe("PancakeMasterChefLp", () => {
   it("deploys the Cake LP Vault correctly", async () => {
     const { cakeLp } = await getNamedAccounts();
     const { deployer } = await setupCakeLpTest();
-    const { CakeVault } = deployer;
+    const { Vault } = deployer;
 
-    const cakeLpGovernance = await CakeVault.governance();
-    const cakeLpSymbol = await CakeVault.symbol();
-    const cakeLpUnderlying = await CakeVault.underlying();
-    const cakeLpUnderlyingUnit = await CakeVault.underlyingUnit();
+    const cakeLpGovernance = await Vault.governance();
+    const cakeLpSymbol = await Vault.symbol();
+    const cakeLpUnderlying = await Vault.underlying();
+    const cakeLpUnderlyingUnit = await Vault.underlyingUnit();
 
     expect(cakeLpGovernance).eq(deployer.address);
     expect(cakeLpSymbol).eq("bfCake-LP");
@@ -39,16 +39,16 @@ describe("PancakeMasterChefLp", () => {
   it("deploys the Strategies correctly", async () => {
     const { cake, cakeLp, router } = await getNamedAccounts();
     const { deployer } = await setupCakeTest();
-    const { CakeStrategy, CakeVault } = deployer;
+    const { Strategy, Vault } = deployer;
 
-    const cakeRouter = await CakeStrategy.pancakeswapRouterV2();
+    const cakeRouter = await Strategy.pancakeswapRouterV2();
 
-    const cakeGovernance = await CakeStrategy.governance();
-    const cakeController = await CakeStrategy.controller();
-    const cakeId = await CakeStrategy.poolId();
-    const cakeUnderlying = await CakeStrategy.underlying();
-    const cakeVault = await CakeStrategy.vault();
-    const cakeRewardToken = await CakeStrategy.rewardToken();
+    const cakeGovernance = await Strategy.governance();
+    const cakeController = await Strategy.controller();
+    const cakeId = await Strategy.poolId();
+    const cakeUnderlying = await Strategy.underlying();
+    const cakeVault = await Strategy.vault();
+    const cakeRewardToken = await Strategy.rewardToken();
 
     expect(cakeRouter).eq(router);
     expect(cakeGovernance).eq(deployer.address);

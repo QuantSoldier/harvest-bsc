@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish } from "ethers";
 import { deployments, getNamedAccounts } from "hardhat";
-import { setupAccounts, setupMasterChefAccounts } from "../utils/account";
+import { setupAccounts, setupStrategyAccounts } from "../utils/account";
 import {
   deployMasterChefStrategyProxy,
   deployVaultProxy,
@@ -50,7 +50,7 @@ export const setupCakeTest = deployments.createFixture(async () => {
     cakeStrategyProxy
   );
 
-  const strategyAccounts = await setupMasterChefAccounts(
+  const strategyAccounts = await setupStrategyAccounts(
     cakeVaultProxy,
     cakeStrategyProxy
   );
@@ -83,7 +83,7 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
     cakeStrategyProxy
   );
 
-  const strategyAccounts = await setupMasterChefAccounts(
+  const strategyAccounts = await setupStrategyAccounts(
     cakeVaultProxy,
     cakeStrategyProxy
   );
@@ -93,37 +93,72 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
 export const setupVenusTest = deployments.createFixture(async () => {
   await deployments.fixture();
   const { deployer } = await setupAccounts();
-  const { Storage, Vault, VenusFoldStrategy } = deployer;
-  const { dai, btcb, vdai, vbtc, wbnb, venus } = await getNamedAccounts();
+  const { Controller, Storage, Vault, VenusFoldStrategy } = deployer;
+  const { dai, vdai, wbnb, venus } = await getNamedAccounts();
 
-  const daiVaultProxy = await deployVaultProxy(
+  const vaultProxy = await deployVaultProxy(
     Storage.address,
     Vault.address,
     dai
   );
-  const daiStrategyProxy = await deployVenusStrategyProxy(
+  const strategyProxy = await deployVenusStrategyProxy(
     Storage.address,
-    daiVaultProxy,
+    vaultProxy,
     VenusFoldStrategy.address,
     dai,
     vdai,
     500,
     1000,
-    5,
+    0,
     [venus, wbnb, dai]
   );
 
-  const DaiVault = await getVaultAt(daiVaultProxy, deployer.address);
-  const DaiStrategy = await getVenusFoldStrategyAt(
-    daiStrategyProxy,
-    deployer.address
+  await addVaultAndStrategy(
+    Controller.address,
+    deployer.address,
+    vaultProxy,
+    strategyProxy
   );
 
-  return {
-    deployer: {
-      ...deployer,
-      DaiVault,
-      DaiStrategy,
-    },
-  };
+  const strategyAccounts = await setupStrategyAccounts(
+    vaultProxy,
+    strategyProxy
+  );
+  return strategyAccounts;
+});
+
+export const setupVenusWBNBTest = deployments.createFixture(async () => {
+  await deployments.fixture();
+  const { deployer } = await setupAccounts();
+  const { Controller, Storage, Vault, VenusWBNBFoldStrategy } = deployer;
+  const { wbnb, vbnb, venus } = await getNamedAccounts();
+
+  const vaultProxy = await deployVaultProxy(
+    Storage.address,
+    Vault.address,
+    wbnb
+  );
+  const strategyProxy = await deployVenusWBNBStrategyProxy(
+    Storage.address,
+    vaultProxy,
+    VenusWBNBFoldStrategy.address,
+    wbnb,
+    vbnb,
+    500,
+    1000,
+    0,
+  );
+
+  await addVaultAndStrategy(
+    Controller.address,
+    deployer.address,
+    vaultProxy,
+    strategyProxy
+  );
+
+  const strategyAccounts = await setupStrategyAccounts(
+    vaultProxy,
+    strategyProxy
+  );
+  return strategyAccounts;
 });

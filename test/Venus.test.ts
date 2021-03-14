@@ -8,12 +8,12 @@ describe("VenusFoldStrategy", () => {
   it("deploys the dai vault correctly", async () => {
     const { dai } = await getNamedAccounts();
     const { deployer } = await setupVenusTest();
-    const { DaiVault } = deployer;
+    const { Vault } = deployer;
 
-    const daiGovernance = await DaiVault.governance();
-    const daiSymbol = await DaiVault.symbol();
-    const daiUnderlying = await DaiVault.underlying();
-    const daiUnderlyingUnit = await DaiVault.underlyingUnit();
+    const daiGovernance = await Vault.governance();
+    const daiSymbol = await Vault.symbol();
+    const daiUnderlying = await Vault.underlying();
+    const daiUnderlyingUnit = await Vault.underlyingUnit();
 
     expect(daiGovernance).eq(deployer.address);
     expect(daiSymbol).eq("bfDAI");
@@ -24,13 +24,13 @@ describe("VenusFoldStrategy", () => {
   it("deploys the dai strategy correctly", async () => {
     const { dai, vdai, router, venus } = await getNamedAccounts();
     const { deployer } = await setupVenusTest();
-    const { DaiStrategy, DaiVault } = deployer;
+    const { Strategy, Vault } = deployer;
 
-    const daiRouter = await DaiStrategy.pancakeswapRouterV2();
-    const daiGovernance = await DaiStrategy.governance();
-    const daiController = await DaiStrategy.controller();
-    const daiUnderlying = await DaiStrategy.underlying();
-    const daiRewardToken = await DaiStrategy.rewardToken();
+    const daiRouter = await Strategy.pancakeswapRouterV2();
+    const daiGovernance = await Strategy.governance();
+    const daiController = await Strategy.controller();
+    const daiUnderlying = await Strategy.underlying();
+    const daiRewardToken = await Strategy.rewardToken();
 
     expect(daiRouter).eq(router);
     expect(daiGovernance).eq(deployer.address);
@@ -38,11 +38,4 @@ describe("VenusFoldStrategy", () => {
     expect(daiUnderlying).eq(dai);
     expect(daiRewardToken).eq(venus);
   });
-
-  it("strategy is profitable", async () => {
-    const { dai, vdai, router, venus } = await getNamedAccounts();
-    const { deployer } = await setupVenusTest();
-    const { DaiStrategy, DaiVault } = deployer;
-
-  })
 });

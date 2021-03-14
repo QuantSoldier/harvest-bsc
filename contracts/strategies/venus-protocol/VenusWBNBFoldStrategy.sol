@@ -274,4 +274,12 @@ contract VenusWBNBFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitia
   function setFolds(uint256 _folds) public onlyGovernance {
     folds = _folds;
   }
+
+  function setSellFloor(uint256 floor) public onlyGovernance {
+    _setSellFloor(floor);
+  }
+
+  function setSell(bool s) public onlyGovernance {
+    _setSell(s);
+  }
 }

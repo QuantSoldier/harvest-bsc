@@ -1,5 +1,5 @@
 import { getNamedAccounts } from "hardhat";
-import { getBEP20At, getFactoryAt, getRouterAt } from "./contracts";
+import { getBEP20At, getFactoryAt, getRouterAt, getWBNBAt } from "./contracts";
 
 export const addLiquidityBNB = async (
   signer: string,
@@ -46,3 +46,18 @@ export const buyTokensWithBNB = async (
 
   return balanceAfter.sub(balance);
 };
+
+export const wrapBNB = async (
+  signer: string,
+  value: string
+) => {
+  const { wbnb } = await getNamedAccounts();
+  const contract = await getWBNBAt(wbnb, signer);
+  const token = await getBEP20At(wbnb, signer);
+
+  const balance = await token.balanceOf(signer);
+  await contract.deposit({value});
+  const balanceAfter = await token.balanceOf(signer);
+
+  return balanceAfter.sub(balance);
+}

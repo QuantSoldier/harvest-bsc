@@ -37,18 +37,18 @@ export const setupAccounts = async () => {
   };
 };
 
-export const setupMasterChefAccounts = async (
+export const setupStrategyAccounts = async (
   vault: string,
   strategy: string
 ) => {
   const accounts = await setupAccounts();
 
-  const deployer = await setupMasterChefAccount(
+  const deployer = await setupStrategyAccount(
     accounts.deployer.address,
     vault,
     strategy
   );
-  const farmerAlpha = await setupMasterChefAccount(
+  const farmerAlpha = await setupStrategyAccount(
     accounts.farmerAlpha.address,
     vault,
     strategy
@@ -90,16 +90,16 @@ const setupAccount = async (signer: string) => {
   };
 };
 
-const setupMasterChefAccount = async (
+const setupStrategyAccount = async (
   signer: string,
   vault: string,
   strategy: string
 ) => {
-  const CakeVault = await getVaultAt(vault, signer);
-  const CakeStrategy = await getMasterChefStrategyAt(strategy, signer);
+  const Vault = await getVaultAt(vault, signer);
+  const Strategy = await getMasterChefStrategyAt(strategy, signer);
 
   return {
-    CakeVault,
-    CakeStrategy,
+    Vault,
+    Strategy,
   };
 };
