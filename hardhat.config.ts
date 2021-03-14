@@ -4,7 +4,8 @@ import "hardhat-deploy";
 import "hardhat-deploy-ethers";
 import "hardhat-spdx-license-identifier";
 import "hardhat-typechain";
-import "@nomiclabs/hardhat-etherscan"
+import "@nomiclabs/hardhat-etherscan";
+import "@openzeppelin/test-helpers/configure";
 import secrets from "./secrets.json";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -38,10 +39,12 @@ const config: HardhatUserConfig = {
     timeout: 1200000,
   },
   etherscan: {
-    apiKey: secrets.bscanKey || ''
+    apiKey: secrets.bscanKey || "",
   },
   namedAccounts: {
     deployer: 0,
+    farmerAlpha: 1,
+    farmerBeta: 2,
     token: {
       56: "0x58eDB145b4D9b268056dB1a60029C9Db20648350",
       97: "0x935f7Bc1ba9015cEbaE8d98D4B5F8Dae30a2E84d",
@@ -60,15 +63,19 @@ const config: HardhatUserConfig = {
     },
     wbnb: {
       56: "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
-      97: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd"
+      97: "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd",
     },
     router: {
       56: "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
-      97: "0xC250F711f9C7d662E6d119EAFECd04b49F071267"
+      97: "0xC250F711f9C7d662E6d119EAFECd04b49F071267",
+    },
+    factory: {
+      56: "0xbcfccbde45ce874adcb698cc183debcf17952812",
+      97: "0x5cc2d3253fd2db7949725f6cdbf474bc07a059e2",
     },
     chef: {
       56: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
-      97: "0x9F2Ecb21CD106fC4ad11c94B2b0f1E60dFDbeebc"
+      97: "0x9F2Ecb21CD106fC4ad11c94B2b0f1E60dFDbeebc",
     },
     cake: {
       56: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82",
@@ -76,11 +83,11 @@ const config: HardhatUserConfig = {
     },
     cakeLp: {
       56: "0xA527a61703D82139F8a06Bc30097cC9CAA2df5A6",
-      97: ""
+      97: "",
     },
     syrup: {
       56: "",
-      97: "0xE32f7b463248B63F5B36354b0DFF1220C2e0dbc5"
+      97: "0xE32f7b463248B63F5B36354b0DFF1220C2e0dbc5",
     },
     venus: {
       56: "0xcf6bb5389c92bdda8a3747ddb454cb7a64626c63",

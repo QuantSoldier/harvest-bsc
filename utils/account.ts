@@ -1,4 +1,4 @@
-import { getNamedAccounts } from "hardhat";
+import { getNamedAccounts, network } from "hardhat";
 import {
   getController,
   getForwarder,
@@ -17,11 +17,53 @@ import {
   getVenusWBNBFoldStrategyAt,
 } from "./contracts";
 
+export const impersonateAccounts = async (accounts: string[]) => {
+  console.log("Impersonating");
+  for (let account of accounts) {
+    console.log(account);
+    await network.provider.request({
+      method: "hardhat_impersonateAccount",
+      params: [account],
+    });
+  }
+};
+
 export const setupAccounts = async () => {
-  const { deployer } = await getNamedAccounts();
+  const { deployer, farmerAlpha } = await getNamedAccounts();
 
   return {
     deployer: await setupAccount(deployer),
+    farmerAlpha: await setupAccount(farmerAlpha),
+  };
+};
+
+export const setupMasterChefAccounts = async (
+  vault: string,
+  strategy: string
+) => {
+  const accounts = await setupAccounts();
+
+  const deployer = await setupMasterChefAccount(
+    accounts.deployer.address,
+    vault,
+    strategy
+  );
+  const farmerAlpha = await setupMasterChefAccount(
+    accounts.farmerAlpha.address,
+    vault,
+    strategy
+  );
+
+  return {
+    ...accounts,
+    deployer: {
+      ...accounts.deployer,
+      ...deployer,
+    },
+    farmerAlpha: {
+      ...accounts.farmerAlpha,
+      ...farmerAlpha,
+    },
   };
 };
 
@@ -45,5 +87,19 @@ const setupAccount = async (signer: string) => {
     MasterChefStrategy,
     VenusFoldStrategy,
     VenusWBNBFoldStrategy,
+  };
+};
+
+const setupMasterChefAccount = async (
+  signer: string,
+  vault: string,
+  strategy: string
+) => {
+  const CakeVault = await getVaultAt(vault, signer);
+  const CakeStrategy = await getMasterChefStrategyAt(strategy, signer);
+
+  return {
+    CakeVault,
+    CakeStrategy,
   };
 };

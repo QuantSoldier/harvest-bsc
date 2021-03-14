@@ -1,6 +1,6 @@
 import { BigNumber, BigNumberish } from "ethers";
 import { deployments, getNamedAccounts } from "hardhat";
-import { setupAccounts } from "../utils/account";
+import { setupAccounts, setupMasterChefAccounts } from "../utils/account";
 import {
   deployMasterChefStrategyProxy,
   deployVaultProxy,
@@ -10,7 +10,11 @@ import {
 
 import * as chai from "chai";
 import { waffleChai } from "@ethereum-waffle/chai";
-import { getMasterChefStrategyAt, getVaultAt, getVenusFoldStrategyAt } from "../utils/contracts";
+import {
+  getMasterChefStrategyAt,
+  getVaultAt,
+  getVenusFoldStrategyAt,
+} from "../utils/contracts";
 chai.use(waffleChai);
 
 export const setupDeployTest = deployments.createFixture(async () => {
@@ -38,25 +42,17 @@ export const setupCakeTest = deployments.createFixture(async () => {
     0
   );
 
-  const CakeVault = await getVaultAt(cakeVaultProxy, deployer.address);
-  const CakeStrategy = await getMasterChefStrategyAt(
-    cakeStrategyProxy,
-    deployer.address
+  const strategyAccounts = await setupMasterChefAccounts(
+    cakeVaultProxy,
+    cakeStrategyProxy
   );
-
-  return {
-    deployer: {
-      ...deployer,
-      CakeVault,
-      CakeStrategy,
-    },
-  };
+  return strategyAccounts;
 });
 
 export const setupCakeLpTest = deployments.createFixture(async () => {
   await deployments.fixture();
-  const { deployer } = await setupAccounts();
-  const { Storage, Vault, MasterChefStrategy } = deployer;
+  const accounts = await setupAccounts();
+  const { Storage, Vault, MasterChefStrategy } = accounts.deployer;
   const { cakeLp } = await getNamedAccounts();
 
   const cakeVaultProxy = await deployVaultProxy(
@@ -72,19 +68,11 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
     1
   );
 
-  const CakeVault = await getVaultAt(cakeVaultProxy, deployer.address);
-  const CakeStrategy = await getMasterChefStrategyAt(
-    cakeStrategyProxy,
-    deployer.address
+  const strategyAccounts = await setupMasterChefAccounts(
+    cakeVaultProxy,
+    cakeStrategyProxy
   );
-
-  return {
-    deployer: {
-      ...deployer,
-      CakeVault,
-      CakeStrategy,
-    },
-  };
+  return strategyAccounts;
 });
 
 export const setupVenusTest = deployments.createFixture(async () => {

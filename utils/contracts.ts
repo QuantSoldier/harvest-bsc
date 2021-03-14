@@ -5,6 +5,7 @@ import {
   Controller,
   FeeRewardForwarder,
   IMasterChef,
+  PancakeFactory,
   PancakeMasterChefLPStrategy,
   PancakeRouter,
   RewardToken,
@@ -127,6 +128,15 @@ export const getRouterAt = async (address: string, signer: string) => {
     signer
   )) as PancakeRouter;
   return router;
+};
+
+export const getFactoryAt = async (address: string, signer: string) => {
+  const factory = (await ethers.getContractAt(
+    "PancakeFactory",
+    address,
+    signer
+  )) as PancakeFactory;
+  return factory;
 };
 
 export const getBEP20At = async (address: string, signer: string) => {

@@ -32,14 +32,15 @@ export const deployPool = async (
   const result = await deploy("NoMintRewardPool", {
     log: true,
     from: deployer,
+    skipIfAlreadyDeployed: false,
     args: [
       farmToken,
       stakedToken,
       604800,
       deployer, // rewardDistribution, initially deployer
       storage,
-      vault,
-      migrator,
+      ethers.utils.getAddress("0"),
+      ethers.utils.getAddress("0"),
     ],
   });
 
@@ -115,6 +116,7 @@ export const deployVaultProxy = async (
     log: true,
     from: deployer,
     args: [vault],
+    // skipIfAlreadyDeployed: false
   });
 
   const vaultProxy = (await ethers.getContractAt(

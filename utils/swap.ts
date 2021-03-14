@@ -1,24 +1,48 @@
-import { getBEP20At, getRouterAt } from "./contracts"
-
+import { getNamedAccounts } from "hardhat";
+import { getBEP20At, getFactoryAt, getRouterAt } from "./contracts";
 
 export const addLiquidityBNB = async (
-  router:string,
-  signer:string,
-  token:string, 
-  amount:string, 
-  value:string
+  signer: string,
+  token: string,
+  amount: string,
+  value: string
 ) => {
+  const { router, factory, wbnb } = await getNamedAccounts();
   const pancakeRouter = await getRouterAt(router, signer);
   const tokenContract = await getBEP20At(token, signer);
+  const factoryContract = await getFactoryAt(factory, signer);
 
-  await tokenContract.approve(router, amount).then(tx => tx.wait())
-  await pancakeRouter.addLiquidityETH(
-    token,
-    amount,
-    0,
-    0,
-    signer,
-    Date.now() + 900000,
-    { value }
-  ).then(tx => tx.wait())
-}
+  const lpToken = await factoryContract.getPair(wbnb, token);
+  const lpTokenContract = await getBEP20At(lpToken, signer);
+
+  await tokenContract.approve(router, amount).then((tx) => tx.wait());
+
+  const balance = await lpTokenContract.balanceOf(signer);
+  await pancakeRouter
+    .addLiquidityETH(token, amount, 0, 0, signer, Date.now() + 900000, {
+      value,
+    })
+    .then((tx) => tx.wait());
+  const balanceAfter = await lpTokenContract.balanceOf(signer);
+
+  return balanceAfter.sub(balance);
+};
+
+export const buyTokensWithBNB = async (
+  signer: string,
+  token: string,
+  value: string
+) => {
+  const { router, wbnb } = await getNamedAccounts();
+  const pancakeRouter = await getRouterAt(router, signer);
+  const tokenContract = await getBEP20At(token, signer);
+  const path = [wbnb, token];
+
+  const balance = await tokenContract.balanceOf(signer);
+  await pancakeRouter
+    .swapExactETHForTokens(0, path, signer, Date.now() + 900000, { value })
+    .then((tx) => tx.wait());
+  const balanceAfter = await tokenContract.balanceOf(signer);
+
+  return balanceAfter.sub(balance);
+};
