@@ -109,7 +109,7 @@ export const setupVenusTest = deployments.createFixture(async () => {
     vdai,
     500,
     1000,
-    1,
+    0,
     [venus, wbnb, dai]
   );
 
