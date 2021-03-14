@@ -116,6 +116,10 @@ const config: HardhatUserConfig = {
       56: "",
       97: "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee",
     },
+    vbnb: {
+      56: "0xA07c5b74C9B40447a954e1466938b865b6BBea36",
+      97: "",
+    },
   },
   networks: {
     localhost: {

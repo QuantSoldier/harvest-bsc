@@ -187,11 +187,11 @@ contract VenusInteractor is ReentrancyGuard {
 
       // redeem just as much as needed to repay the loan
       uint256 wantToRedeem = supplied.sub(requiredCollateral);
-      redeemUnderlyingInWBNB(SafeMath.min(wantToRedeem, available));
+      _redeemUnderlying(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
       uint256 balance = underlying.balanceOf(address(this));
-      _repayInWBNB(SafeMath.min(borrowed, balance));
+      _repay(SafeMath.min(borrowed, balance));
 
       // update the parameters
       available = vtoken.getCash();
@@ -200,7 +200,7 @@ contract VenusInteractor is ReentrancyGuard {
     }
 
     // redeem the most we can redeem
-    redeemUnderlyingInWBNB(SafeMath.min(available, supplied));
+    _redeemUnderlying(SafeMath.min(available, supplied));
   }
 
   function redeemMaximumWBNBWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
@@ -219,11 +219,11 @@ contract VenusInteractor is ReentrancyGuard {
 
       // redeem just as much as needed to repay the loan
       uint256 wantToRedeem = supplied.sub(requiredCollateral);
-      _redeemUnderlying(SafeMath.min(wantToRedeem, available));
+      redeemUnderlyingInWBNB(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
       uint256 balance = underlying.balanceOf(address(this));
-      _repay(SafeMath.min(borrowed, balance));
+      _repayInWBNB(SafeMath.min(borrowed, balance));
 
       // update the parameters
       available = vtoken.getCash();
@@ -232,7 +232,7 @@ contract VenusInteractor is ReentrancyGuard {
     }
 
     // redeem the most we can redeem
-    _redeemUnderlying(SafeMath.min(available, supplied));
+    redeemUnderlyingInWBNB(SafeMath.min(available, supplied));
   }
 
   function getLiquidity() external view returns(uint256) {

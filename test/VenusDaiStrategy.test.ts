@@ -1,45 +1,42 @@
 import { ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
+import { expect } from "chai";
 import {
-  addLiquidityBNB,
   buyTokensWithBNB,
   depositVault,
   impersonateAccounts,
+  getBEP20At,
 } from "../utils";
 import { advanceNBlocks } from "../utils/testing";
-import { setupCakeLpTest } from "./setup";
+import { setupVenusTest } from "./setup";
 
-describe("PancakeMasterChefLp", () => {
+describe("Venus Dai Strategy", () => {
   it("farmer should earn money", async () => {
-    const { deployer, farmerAlpha } = await setupCakeLpTest();
-    const { cake, cakeLp } = await getNamedAccounts();
+    const { dai, vdai } = await getNamedAccounts();
+    const { deployer, farmerAlpha } = await setupVenusTest();
 
     const { Vault } = farmerAlpha;
     const { Controller, Strategy } = deployer;
 
+    const underlying = await getBEP20At(dai, farmerAlpha.address);
     await Strategy.setSellFloor(0);
 
     const amount = await buyTokensWithBNB(
       farmerAlpha.address,
-      cake,
-      ethers.utils.parseEther("50").toString()
-    );
-
-    const lpBalance = await addLiquidityBNB(
-      farmerAlpha.address,
-      cake,
-      amount.toString(),
-      ethers.utils.parseEther("50").toString()
+      dai,
+      ethers.utils.parseEther("100").toString()
     );
 
     await depositVault(
       farmerAlpha.address,
-      cakeLp,
+      dai,
       Vault.address,
-      lpBalance.toString()
+      amount.toString()
     );
 
+    var vaultBalance = await Vault.balanceOf(farmerAlpha.address);
+
     const hours = 10;
-    const blocksPerHours = 2400;
+    const blocksPerHours = 14400;
     for (let i = 0; i < hours; i++) {
       console.log("loop", i);
       const sharePrice = await Vault.getPricePerFullShare();
@@ -53,14 +50,13 @@ describe("PancakeMasterChefLp", () => {
       await advanceNBlocks(blocksPerHours);
     }
 
-    const vaultBalance = await Vault.balanceOf(farmerAlpha.address);
-    // console.log("vaultBalance: ", vaultBalance.toString());
+    vaultBalance = await Vault.balanceOf(farmerAlpha.address);
+    console.log("vaultBalance: ", vaultBalance.toString());
 
-    // await CakeVault.withdraw(vaultBalance.toFixed(), { from: farmer1 });
-    // let farmerNewBalance = await underlying.balanceOf(farmer1));
+    await Vault.withdraw(vaultBalance.toString());
+    const farmerNewBalance = await underlying.balanceOf(farmerAlpha.address);
 
+    expect(farmerNewBalance).above(amount);
     console.log("earned!");
-
-    // await strategy.withdrawAllToVault({ from: governance }); // making sure can withdraw all for a next switch
   });
 });
