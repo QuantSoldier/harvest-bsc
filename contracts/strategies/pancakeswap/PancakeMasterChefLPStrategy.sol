@@ -12,7 +12,6 @@ import "../../lib/@harvest-finance/hardworkInterface/IVault.sol";
 import "../../lib/@harvest-finance/strategies/upgradability/BaseUpgradeableStrategy.sol";
 import "@pancakeswap-libs/pancake-swap-core/contracts/interfaces/IPancakePair.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
-import "hardhat/console.sol";
 
 contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   using SafeMath for uint256;
@@ -22,6 +21,10 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   
   // additional storage slots (on top of BaseUpgradeableStrategy ones) are defined here
   bytes32 internal constant _POOLID_SLOT = 0x3fd729bfa2e28b7806b03a6e014729f59477b530f995be4d51defc9dad94810b;
+
+  // boolean to determine if underlying is single asset or LP token
+  bool public isLpToken;
+
   // this would be reset on each upgrade
   mapping (address => address[]) public pancakeswapRoutes;
 
@@ -35,7 +38,8 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     address _vault,
     address _rewardPool,
     address _rewardToken,
-    uint256 _poolID
+    uint256 _poolID,
+    bool _isLpToken
   ) public initializer {
 
     BaseUpgradeableStrategy.initialize(
@@ -54,21 +58,19 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     address _lpt;
     (_lpt,,,) = IMasterChef(rewardPool()).poolInfo(_poolID);
     require(_lpt == underlying(), "Pool Info does not match underlying");
-    console.log("LPT is %s", _lpt);
     _setPoolId(_poolID);
+    _setIsLpToken(_isLpToken);
 
-    // if we are staking in the CAKE pool
-    if (_underlying == _rewardToken) {
-   
-    } else {
+    if (isLpToken) {
       address uniLPComponentToken0 = IPancakePair(underlying()).token0();
       address uniLPComponentToken1 = IPancakePair(underlying()).token1();
 
       // these would be required to be initialized separately by governance
       pancakeswapRoutes[uniLPComponentToken0] = new address[](0);
       pancakeswapRoutes[uniLPComponentToken1] = new address[](0);
+    } else {
+      pancakeswapRoutes[underlying()] = new address[](0);
     }
-    
   }
 
   function depositArbCheck() public view override returns(bool) {
@@ -79,11 +81,12 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
       (bal,) = IMasterChef(rewardPool()).userInfo(poolId(), address(this));
   }
 
-  function exitRewardPool() internal {
-      uint256 bal = rewardPoolBalance();
-      if (bal != 0) {
-          IMasterChef(rewardPool()).withdraw(poolId(), bal);
-      }
+  function exitRewardPool(uint256 bal) internal {
+    if (poolId() == 0) {
+      IMasterChef(rewardPool()).leaveStaking(0); // withdraw 0 so that we dont notify fees on basis
+    } else {
+      IMasterChef(rewardPool()).withdraw(poolId(), bal);
+    }
   }
 
   function unsalvagableTokens(address token) public view override returns (bool) {
@@ -94,7 +97,12 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     uint256 entireBalance = IBEP20(underlying()).balanceOf(address(this));
     IBEP20(underlying()).safeApprove(rewardPool(), 0);
     IBEP20(underlying()).safeApprove(rewardPool(), entireBalance);
-    IMasterChef(rewardPool()).deposit(poolId(), entireBalance);
+
+    if (poolId() == 0) {
+      IMasterChef(rewardPool()).enterStaking(entireBalance);
+    } else {
+      IMasterChef(rewardPool()).deposit(poolId(), entireBalance);
+    }
   }
 
   /*
@@ -103,7 +111,8 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   *   The function is only used for emergency to exit the pool
   */
   function emergencyExit() public onlyGovernance {
-    exitRewardPool();
+    uint256 bal = rewardPoolBalance();
+    exitRewardPool(bal);
     _setPausedInvesting(true);
   }
 
@@ -116,10 +125,14 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   }
 
   function setLiquidationPathsOnPancake(address [] memory _uniswapRouteToToken0, address [] memory _uniswapRouteToToken1) public onlyGovernance {
-    address uniLPComponentToken0 = IPancakePair(underlying()).token0();
-    address uniLPComponentToken1 = IPancakePair(underlying()).token1();
-    pancakeswapRoutes[uniLPComponentToken0] = _uniswapRouteToToken0;
-    pancakeswapRoutes[uniLPComponentToken1] = _uniswapRouteToToken1;
+    if (isLpToken) {
+      address uniLPComponentToken0 = IPancakePair(underlying()).token0();
+      address uniLPComponentToken1 = IPancakePair(underlying()).token1();
+      pancakeswapRoutes[uniLPComponentToken0] = _uniswapRouteToToken0;
+      pancakeswapRoutes[uniLPComponentToken1] = _uniswapRouteToToken1;
+    } else {
+      pancakeswapRoutes[underlying()] = _uniswapRouteToToken0;
+    }
   }
 
   // We assume that all the tradings can be done on Uniswap
@@ -134,39 +147,63 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     notifyProfitInRewardToken(rewardBalance);
     uint256 remainingRewardBalance = IBEP20(rewardToken()).balanceOf(address(this));
 
-    address uniLPComponentToken0 = IPancakePair(underlying()).token0();
-    address uniLPComponentToken1 = IPancakePair(underlying()).token1();
+    if (remainingRewardBalance > 0) {
+      if (isLpToken) {
+        _liquidateLpAssets(remainingRewardBalance);
+      } else {
+        _liquidateSingleAsset(remainingRewardBalance);
+      }
+    }
+  }
 
-    address[] memory routesToken0 = pancakeswapRoutes[address(uniLPComponentToken0)];
-    address[] memory routesToken1 = pancakeswapRoutes[address(uniLPComponentToken1)];
+  // Liquidate Cake into the single underlying asset (non-LP tokens), no-op if Cake is the underlying
+  function _liquidateSingleAsset(uint256 remainingRewardBalance) internal {
+    if (poolId() != 0) { 
+      address[] memory routesToken0 = pancakeswapRoutes[underlying()];
 
-    if (remainingRewardBalance > 0 // we have tokens to swap
-      && routesToken0.length > 1 // and we have a route to do the swap
-      && routesToken1.length > 1 // and we have a route to do the swap
-    ) {
       uint256 amountOutMin = 1;
 
       // allow PancakeSwap to sell our reward
       IBEP20(rewardToken()).safeApprove(pancakeswapRouterV2, 0);
       IBEP20(rewardToken()).safeApprove(pancakeswapRouterV2, remainingRewardBalance);
 
-      uint256 toToken0 = remainingRewardBalance / 2;
-      uint256 toToken1 = remainingRewardBalance.sub(toToken0);
-
-      // we sell to uni
-
-      // sell Uni to token1
+      // sell Uni to token2
       // we can accept 1 as minimum because this is called only by a trusted role
       IUniswapV2Router02(pancakeswapRouterV2).swapExactTokensForTokens(
-        toToken0,
+        remainingRewardBalance,
         amountOutMin,
         routesToken0,
         address(this),
         block.timestamp
       );
-      uint256 token0Amount = IBEP20(uniLPComponentToken0).balanceOf(address(this));
+    }
+  }
 
-      // sell Uni to token2
+  // Liquidate Cake into underlying LP tokens, only do one swap if Cake/WBNB LP is the underlying
+  function _liquidateLpAssets(uint256 remainingRewardBalance) internal {
+    address uniLPComponentToken0 = IPancakePair(underlying()).token0();
+    address uniLPComponentToken1 = IPancakePair(underlying()).token1();
+
+    address[] memory routesToken0 = pancakeswapRoutes[address(uniLPComponentToken0)];
+    address[] memory routesToken1 = pancakeswapRoutes[address(uniLPComponentToken1)];
+
+    uint256 amountOutMin = 1;
+
+    // allow PancakeSwap to sell our reward
+    IBEP20(rewardToken()).safeApprove(pancakeswapRouterV2, 0);
+    IBEP20(rewardToken()).safeApprove(pancakeswapRouterV2, remainingRewardBalance);
+
+    uint256 token0Amount;
+    uint256 token1Amount;
+
+    if (
+      uniLPComponentToken0 == rewardToken()  // we are dealing with CAKE/WBNB LP
+      && routesToken1.length > 1 // we have a route to do the swap
+    ) {
+      token0Amount = remainingRewardBalance / 2; // 1/2 of CAKE is saved for LP
+      uint256 toToken1 = remainingRewardBalance.sub(token0Amount); // other 1/2 is liquidated
+
+      // sell Cake to token1
       // we can accept 1 as minimum because this is called only by a trusted role
       IUniswapV2Router02(pancakeswapRouterV2).swapExactTokensForTokens(
         toToken1,
@@ -175,7 +212,52 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
         address(this),
         block.timestamp
       );
-      uint256 token1Amount = IBEP20(uniLPComponentToken1).balanceOf(address(this));
+      token1Amount = IBEP20(uniLPComponentToken1).balanceOf(address(this));
+
+      // Only approve WBNB, CAKE has already been approved at this point
+      IBEP20(uniLPComponentToken1).safeApprove(pancakeswapRouterV2, 0);
+      IBEP20(uniLPComponentToken1).safeApprove(pancakeswapRouterV2, token1Amount);
+
+      // we provide liquidity to PancakeSwap
+      uint256 liquidity;
+      (,,liquidity) = IUniswapV2Router02(pancakeswapRouterV2).addLiquidity(
+        uniLPComponentToken0,
+        uniLPComponentToken1,
+        token0Amount,
+        token1Amount,
+        1,  // we are willing to take whatever the pair gives us
+        1,  // we are willing to take whatever the pair gives us
+        address(this),
+        block.timestamp
+      );
+    } else if (
+      routesToken0.length > 1 // and we have a route to do the swap
+      && routesToken1.length > 1 // and we have a route to do the swap
+    ) {
+      uint256 toToken0 = remainingRewardBalance / 2;
+      uint256 toToken1 = remainingRewardBalance.sub(toToken0);
+
+      // sell Cake to token0
+      // we can accept 1 as minimum because this is called only by a trusted role
+      IUniswapV2Router02(pancakeswapRouterV2).swapExactTokensForTokens(
+        toToken0,
+        amountOutMin,
+        routesToken0,
+        address(this),
+        block.timestamp
+      );
+      token0Amount = IBEP20(uniLPComponentToken0).balanceOf(address(this));
+
+      // sell Cake to token1
+      // we can accept 1 as minimum because this is called only by a trusted role
+      IUniswapV2Router02(pancakeswapRouterV2).swapExactTokensForTokens(
+        toToken1,
+        amountOutMin,
+        routesToken1,
+        address(this),
+        block.timestamp
+      );
+      token1Amount = IBEP20(uniLPComponentToken1).balanceOf(address(this));
 
       // provide token1 and token2 to SUSHI
       IBEP20(uniLPComponentToken0).safeApprove(pancakeswapRouterV2, 0);
@@ -184,7 +266,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
       IBEP20(uniLPComponentToken1).safeApprove(pancakeswapRouterV2, 0);
       IBEP20(uniLPComponentToken1).safeApprove(pancakeswapRouterV2, token1Amount);
 
-      // we provide liquidity to sushi
+      // we provide liquidity to PancakeSwap
       uint256 liquidity;
       (,,liquidity) = IUniswapV2Router02(pancakeswapRouterV2).addLiquidity(
         uniLPComponentToken0,
@@ -215,7 +297,8 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   */
   function withdrawAllToVault() public override restricted {
     if (address(rewardPool()) != address(0)) {
-      exitRewardPool();
+      uint256 bal = rewardPoolBalance();
+      exitRewardPool(bal);
     }
     _liquidateReward();
     IBEP20(underlying()).safeTransfer(vault(), IBEP20(underlying()).balanceOf(address(this)));
@@ -278,8 +361,12 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   *   when the investing is being paused by governance.
   */
   function doHardWork() external override onlyNotPausedInvesting restricted {
-    exitRewardPool();
-    _liquidateReward();
+    uint256 bal = rewardPoolBalance();
+    if (bal != 0) {
+      exitRewardPool(bal);
+      _liquidateReward();
+    }
+    
     investAllUnderlying();
   }
 
@@ -296,6 +383,10 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   */
   function setSellFloor(uint256 floor) public onlyGovernance {
     _setSellFloor(floor);
+  }
+
+  function _setIsLpToken(bool _isLpToken) internal {
+    isLpToken = _isLpToken;
   }
 
   // masterchef rewards pool ID

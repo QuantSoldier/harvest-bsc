@@ -1,22 +1,18 @@
-import { BigNumber, BigNumberish } from "ethers";
-import { deployments, getNamedAccounts } from "hardhat";
-import { setupAccounts, setupStrategyAccounts } from "../utils/account";
+import * as chai from "chai";
+import { waffleChai } from "@ethereum-waffle/chai";
+chai.use(waffleChai);
+
+import { deployments, ethers, getNamedAccounts } from "hardhat";
 import {
   deployMasterChefStrategyProxy,
   deployVaultProxy,
   deployVenusStrategyProxy,
   deployVenusWBNBStrategyProxy,
-} from "../utils/deploy";
-
-import * as chai from "chai";
-import { waffleChai } from "@ethereum-waffle/chai";
-import {
-  getMasterChefStrategyAt,
-  getVaultAt,
-  getVenusFoldStrategyAt,
-} from "../utils/contracts";
-import { addVaultAndStrategy } from "../utils";
-chai.use(waffleChai);
+  setupAccounts,
+  setupStrategyAccounts,
+  addPancakeSwapLiquidationRoute,
+  addVaultAndStrategy,
+} from "../utils";
 
 export const setupDeployTest = deployments.createFixture(async () => {
   await deployments.fixture();
@@ -40,7 +36,8 @@ export const setupCakeTest = deployments.createFixture(async () => {
     cakeVaultProxy,
     MasterChefStrategy.address,
     cake,
-    0
+    0,
+    false
   );
 
   await addVaultAndStrategy(
@@ -61,7 +58,7 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
   await deployments.fixture();
   const { deployer } = await setupAccounts();
   const { Controller, Storage, Vault, MasterChefStrategy } = deployer;
-  const { cakeLp } = await getNamedAccounts();
+  const { cakeLp, cake, wbnb } = await getNamedAccounts();
 
   const cakeVaultProxy = await deployVaultProxy(
     Storage.address,
@@ -73,7 +70,8 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
     cakeVaultProxy,
     MasterChefStrategy.address,
     cakeLp,
-    1
+    1,
+    true
   );
 
   await addVaultAndStrategy(
@@ -81,6 +79,13 @@ export const setupCakeLpTest = deployments.createFixture(async () => {
     deployer.address,
     cakeVaultProxy,
     cakeStrategyProxy
+  );
+
+  await addPancakeSwapLiquidationRoute(
+    cakeStrategyProxy,
+    deployer.address,
+    [],
+    [cake, wbnb]
   );
 
   const strategyAccounts = await setupStrategyAccounts(
@@ -146,7 +151,7 @@ export const setupVenusWBNBTest = deployments.createFixture(async () => {
     vbnb,
     500,
     1000,
-    0,
+    0
   );
 
   await addVaultAndStrategy(

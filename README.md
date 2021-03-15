@@ -20,6 +20,7 @@ yarn compile
 
 ```
 yarn test
+yarn test test/MasterChefStrategy.test.ts
 ```
 
 ## Usage
@@ -77,9 +78,6 @@ yarn mainnet:verify 0xbF39886B4F91F5170934191b0d96Dd277147FBB2
 - MasterChef: https://bscscan.com/address/0x73feaa1ee314f8c655e354234017be2193c9e24e
 - PancakeFactory: https://bscscan.com/address/0xBCfCcbde45cE874adCB698cC183deBcF17952812
 - PancakeRouter: https://bscscan.com/address/0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F
-
-Pool ID = 0: CAKE => CAKE  
-Pool ID = 1: CAKE/WBNB => CAKE
 
 ### Venus Protocol
 

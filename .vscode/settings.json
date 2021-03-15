@@ -13,5 +13,7 @@
     "HARDHAT_CONFIG": "hardhat.config.ts",
     "HARDHAT_COMPILE": "true"
   },
-  "mochaExplorer.require": ["ts-node/register/transpile-only"]
+  "mochaExplorer.timeout": 200000,
+  "mochaExplorer.require": ["ts-node/register/transpile-only"],
+  "mochaExplorer.files": ["test/**/*.{j,t}s"]
 }

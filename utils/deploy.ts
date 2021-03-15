@@ -62,7 +62,8 @@ export const deployMasterChefStrategyProxy = async (
   vault: string,
   strategy: string,
   underlying: string,
-  pid: number
+  pid: number,
+  isLpToken: boolean
 ) => {
   const { deploy } = deployments;
   const { deployer, cake, chef } = await getNamedAccounts();
@@ -85,7 +86,8 @@ export const deployMasterChefStrategyProxy = async (
       vault, // vaultProxyAddress
       chef,
       cake,
-      pid
+      pid,
+      isLpToken
     )
     .then((tx) => tx.wait());
 
