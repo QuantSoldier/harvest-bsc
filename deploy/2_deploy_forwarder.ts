@@ -26,13 +26,14 @@ const func: DeployFunction = async ({
   const result = await deploy("FeeRewardForwarder", {
     log: true,
     from: deployer,
-    args: [storage.address, tokenAddress],
+    args: [storage.address],
   });
 
   if (result.newlyDeployed) {
     if (network.live) {
       await run("verify:verify", {
         address: result.address,
+        constructorArguments: [storage.address],
       })
     }
   }

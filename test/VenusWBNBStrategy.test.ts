@@ -35,7 +35,7 @@ describe("Venus WBNB Strategy", () => {
     var vaultBalance = await Vault.balanceOf(farmerAlpha.address);
 
     const hours = 10;
-    const blocksPerHours = 14400;
+    const blocksPerHours = 2400;
     for (let i = 0; i < hours; i++) {
       console.log("loop", i);
       const sharePrice = await Vault.getPricePerFullShare();
@@ -57,5 +57,6 @@ describe("Venus WBNB Strategy", () => {
 
     expect(farmerNewBalance).above(amount);
     console.log("earned!");
+
   });
 });

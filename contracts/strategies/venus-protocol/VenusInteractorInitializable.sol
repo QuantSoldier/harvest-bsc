@@ -5,14 +5,14 @@ pragma solidity 0.6.12;
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
-import "../../lib/@openzeppelin/upgrades/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "./interface/IVBNB.sol";
 import "./interface/CompleteVToken.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategy.sol";
 import "./interface/WBNB.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
-contract VenusInteractorInitializable is Initializable {
+contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeable {
 
   using SafeMath for uint256;
   using SafeBEP20 for IBEP20;
@@ -30,6 +30,7 @@ contract VenusInteractorInitializable is Initializable {
     address _vtoken,
     address _comptroller
   ) public initializer {
+    __ReentrancyGuard_init();
     // Comptroller:
     comptroller = ComptrollerInterface(_comptroller);
 
@@ -52,14 +53,13 @@ contract VenusInteractorInitializable is Initializable {
   * If we the "amount" we want to supply is less than balance, then
   * only supply that amount.
   */
-  function _supplyBNBInWBNB(uint256 amountInWBNB) internal {
+  function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
     // underlying here is WETH
     uint256 balance = underlyingToken.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
     }
     WBNB wbnb = WBNB(_wbnb);
-    address _wbnbAddress = address(_wbnb);
     wbnb.withdraw(balance); // Unwrapping
     IVBNB(address(vtoken)).mint.value(balance)();
   }
@@ -68,7 +68,7 @@ contract VenusInteractorInitializable is Initializable {
   * Redeems Ether from Compound
   * receives Ether. Wrap all the ether that is in this contract.
   */
-  function _redeemBNBInvTokens(uint256 amountVTokens) internal {
+  function _redeemBNBInvTokens(uint256 amountVTokens) internal nonReentrant {
     _redeemInVTokens(amountVTokens);
     WBNB wbnb = WBNB(_wbnb);
     wbnb.deposit.value(address(this).balance)();

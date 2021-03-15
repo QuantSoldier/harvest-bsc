@@ -151,7 +151,7 @@ export const setupVenusWBNBTest = deployments.createFixture(async () => {
     vbnb,
     500,
     1000,
-    0
+    3
   );
 
   await addVaultAndStrategy(
