@@ -4,6 +4,7 @@ import {
   Vault,
   VenusFoldStrategy,
   VenusWBNBFoldStrategy,
+  VenusVAIStrategy,
 } from "../typechain";
 import { logDeployEnd, logDeployStart } from "./log";
 
@@ -207,6 +208,23 @@ export const deployVenusWBNBStrategyProxy = async (
       folds
     )
     .then((tx) => tx.wait());
+
+  return result.address;
+};
+
+export const deployVenusVaiStrategy = async (
+  storage: string,
+  vault: string,
+  rewardPool: string,
+) => {
+  const { deploy } = deployments;
+  const { deployer, router, venus, vai } = await getNamedAccounts();
+
+  const result = await deploy("VenusVAIStrategy", {
+    log: true,
+    from: deployer,
+    args: [storage, vai, vault, venus, router, rewardPool],
+  });
 
   return result.address;
 };

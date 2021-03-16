@@ -8,6 +8,7 @@ import {
   deployVaultProxy,
   deployVenusStrategyProxy,
   deployVenusWBNBStrategyProxy,
+  deployVenusVaiStrategy,
   setupAccounts,
   setupStrategyAccounts,
   addPancakeSwapLiquidationRoute,
@@ -164,6 +165,37 @@ export const setupVenusWBNBTest = deployments.createFixture(async () => {
   const strategyAccounts = await setupStrategyAccounts(
     vaultProxy,
     strategyProxy
+  );
+  return strategyAccounts;
+});
+
+export const setupVenusVaiTest = deployments.createFixture(async () => {
+  await deployments.fixture();
+  const { deployer } = await setupAccounts();
+  const { Controller, Storage, Vault, VenusVAIStrategy } = deployer;
+  const { vai, venus, vvaiVault } = await getNamedAccounts();
+
+  const vaultProxy = await deployVaultProxy(
+    Storage.address,
+    Vault.address,
+    vai
+  );
+  const strategy = await deployVenusVaiStrategy(
+    Storage.address,
+    vaultProxy,
+    vvaiVault,
+  );
+
+  await addVaultAndStrategy(
+    Controller.address,
+    deployer.address,
+    vaultProxy,
+    strategy
+  );
+
+  const strategyAccounts = await setupStrategyAccounts(
+    vaultProxy,
+    strategy
   );
   return strategyAccounts;
 });

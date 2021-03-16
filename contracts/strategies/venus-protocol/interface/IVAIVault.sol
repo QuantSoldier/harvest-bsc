@@ -8,4 +8,6 @@ interface IVAIVault {
     function withdraw(uint256 _amount) external;
     function claim() external;
     function pendingXVS(address _user) external view returns (uint256);
+    function userInfo(address _user) external view returns (uint256, uint256);
+    function updatePendingRewards() external;
 }

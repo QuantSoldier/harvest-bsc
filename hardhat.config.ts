@@ -125,6 +125,14 @@ const config: HardhatUserConfig = {
       56: "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
       97: "",
     },
+    vai: {
+      56: "0x4BD17003473389A42DAF6a0a729f6Fdb328BbBd7",
+      97: "",
+    },
+    vvaiVault: {
+      56: "0x0667Eed0a0aAb930af74a3dfeDD263A73994f216",
+      97: "",
+    },
   },
   networks: {
     localhost: {

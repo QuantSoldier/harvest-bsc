@@ -15,6 +15,8 @@ import {
   getVenusFoldStrategyAt,
   getVenusWBNBFoldStrategy,
   getVenusWBNBFoldStrategyAt,
+  getVenusVAIStrategy,
+  getVenusVAIStrategyAt,
 } from "./contracts";
 
 export const impersonateAccounts = async (accounts: string[]) => {
@@ -76,6 +78,7 @@ const setupAccount = async (signer: string) => {
   const MasterChefStrategy = await getMasterChefStrategy(signer);
   const VenusFoldStrategy = await getVenusFoldStrategy(signer);
   const VenusWBNBFoldStrategy = await getVenusWBNBFoldStrategy(signer);
+  const VenusVAIStrategy = await getVenusVAIStrategy(signer);
 
   return {
     address: signer,
@@ -87,6 +90,7 @@ const setupAccount = async (signer: string) => {
     MasterChefStrategy,
     VenusFoldStrategy,
     VenusWBNBFoldStrategy,
+    VenusVAIStrategy,
   };
 };
 

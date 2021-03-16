@@ -14,8 +14,10 @@ import {
   Vault,
   VaultProxy,
   VenusFoldStrategy,
+  VenusVAIStrategy,
   VenusWBNBFoldStrategy,
   WBNB,
+  IVAIVault,
 } from "../typechain";
 
 export const getStorage = async (signer: string) => {
@@ -204,4 +206,36 @@ export const getWBNBAt = async (
     signer
   )) as WBNB;
   return wbnb;
-}
+};
+
+export const getVenusVAIStrategy = async (signer: string) => {
+  const strategy = (await ethers.getContract(
+    "VenusVAIStrategy",
+    signer
+  )) as VenusVAIStrategy;
+  return strategy;
+};
+
+export const getVenusVAIStrategyAt = async (
+  address: string,
+  signer: string
+) => {
+  const strategy = (await ethers.getContractAt(
+    "VenusVAIStrategy",
+    address,
+    signer
+  )) as VenusVAIStrategy;
+  return strategy;
+};
+
+export const getVAIVaultAt = async (
+  address: string,
+  signer: string
+) => {
+  const vaivault = (await ethers.getContractAt(
+    "IVAIVault",
+    address,
+    signer
+  )) as IVAIVault;
+  return vaivault;
+};
