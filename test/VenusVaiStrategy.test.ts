@@ -1,34 +1,47 @@
 import { ethers, getNamedAccounts, getUnnamedAccounts } from "hardhat";
+import { BigNumber } from "bignumber.js"
 import { expect } from "chai";
 import {
   buyTokensWithBNB,
   depositVault,
   impersonateAccounts,
   getBEP20At,
+  getVAIVaultAt,
 } from "../utils";
 import { advanceNBlocks } from "../utils/testing";
-import { setupVenusTest } from "./setup";
+import { setupVenusVaiTest } from "./setup";
 
-describe("Venus Dai Strategy", () => {
+describe("Venus VAI Strategy", () => {
   it("farmer should earn money", async () => {
-    const { dai, vdai } = await getNamedAccounts();
-    const { deployer, farmerAlpha } = await setupVenusTest();
+    const { vai, venus, vvaiVault } = await getNamedAccounts();
+    const { deployer, farmerAlpha } = await setupVenusVaiTest();
 
     const { Vault } = farmerAlpha;
     const { Controller, Strategy } = deployer;
 
-    const underlying = await getBEP20At(dai, farmerAlpha.address);
+    const accounts = await getUnnamedAccounts();
+    const mockXVSDistributor = accounts[0];
+    const vvaiVaultContract = await getVAIVaultAt(vvaiVault, mockXVSDistributor);
+
+    const underlying = await getBEP20At(vai, farmerAlpha.address);
+    const venusToken = await getBEP20At(venus, mockXVSDistributor);
     await Strategy.setSellFloor(0);
+
+    const venusAmount = await buyTokensWithBNB(
+      mockXVSDistributor,
+      venus,
+      ethers.utils.parseEther("500").toString()
+    );
 
     const amount = await buyTokensWithBNB(
       farmerAlpha.address,
-      dai,
+      vai,
       ethers.utils.parseEther("100").toString()
     );
 
     await depositVault(
       farmerAlpha.address,
-      dai,
+      vai,
       Vault.address,
       amount.toString()
     );
@@ -39,6 +52,14 @@ describe("Venus Dai Strategy", () => {
     const blocksPerHours = 2400;
     for (let i = 0; i < hours; i++) {
       console.log("loop", i);
+
+      //Distribution for 1250 XVS per day, 3 second block time
+      const distributionAmount = 1250/(24*1200)*blocksPerHours;
+      const distributionAmountBN = ethers.utils.parseEther(distributionAmount.toString())
+
+      await venusToken.approve(vvaiVault, distributionAmountBN).then((tx) => tx.wait());
+      await venusToken.transfer(vvaiVault, distributionAmountBN).then((tx) => tx.wait());
+
       const sharePrice = await Vault.getPricePerFullShare();
       await Controller.doHardWork(Vault.address);
       const newSharePrice = await Vault.getPricePerFullShare();
@@ -58,5 +79,7 @@ describe("Venus Dai Strategy", () => {
 
     expect(farmerNewBalance).above(amount);
     console.log("earned!");
+
+    await Strategy.withdrawAllToVault(); // making sure can withdraw all for a next switch
   });
 });

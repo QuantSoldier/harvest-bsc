@@ -18,7 +18,7 @@ contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializa
   event ProfitNotClaimed();
   event TooLowBalance();
 
-  IBEP20 public xvs; // this will be Cream or Comp
+  IBEP20 public xvs;
 
   address public pancakeswapRouterV2;
   uint256 public suppliedInUnderlying;
@@ -112,7 +112,7 @@ contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializa
   }
 
   /**
-  * Exits Compound and transfers everything to the vault.
+  * Exits Venus and transfers everything to the vault.
   */
   function withdrawAllToVault() external restricted updateSupplyInTheEnd {
     if (allowEmergencyLiquidityShortage) {
@@ -164,12 +164,12 @@ contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializa
     // transfer the amount requested (or the amount we have) back to vault()
     IBEP20(underlying()).safeTransfer(vault(), amountUnderlying);
 
-    // invest back to compound
+    // invest back to Venus
     investAllUnderlying();
   }
 
   /**
-  * Withdraws all assets, liquidates COMP/CREAM, and invests again in the required ratio.
+  * Withdraws all assets, liquidates XVS, and invests again in the required ratio.
   */
   function doHardWork() public restricted {
     if (sell()) {
@@ -182,11 +182,11 @@ contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializa
   }
 
   /**
-  * Redeems maximum that can be redeemed from Compound.
-  * Redeem the minimum of the underlying we own, and the underlying that the cToken can
+  * Redeems maximum that can be redeemed from Venus.
+  * Redeem the minimum of the underlying we own, and the underlying that the vToken can
   * immediately retrieve. Ensures that `redeemMaximum` doesn't fail silently.
   *
-  * DOES NOT ensure that the strategy cUnderlying balance becomes 0.
+  * DOES NOT ensure that the strategy vUnderlying balance becomes 0.
   */
   function redeemMaximum() internal {
     redeemMaximumWithLoan(
@@ -246,10 +246,10 @@ contract VenusFoldStrategy is BaseUpgradeableStrategy, VenusInteractorInitializa
   }
 
   /**
-  * Returns the current balance. Ignores COMP/CREAM that was not liquidated and invested.
+  * Returns the current balance. Ignores XVS that was not liquidated and invested.
   */
   function investedUnderlyingBalance() public view returns (uint256) {
-    // underlying in this strategy + underlying redeemable from Compound/Cream + loan
+    // underlying in this strategy + underlying redeemable from Venus + loan
     return IBEP20(underlying()).balanceOf(address(this))
     .add(suppliedInUnderlying)
     .sub(borrowedInUnderlying);

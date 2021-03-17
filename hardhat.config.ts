@@ -44,6 +44,7 @@ const config: HardhatUserConfig = {
     deployer: 0,
     farmerAlpha: 1,
     farmerBeta: 2,
+    eoa: 3,
     token: {
       56: "0x58eDB145b4D9b268056dB1a60029C9Db20648350",
       97: "0x935f7Bc1ba9015cEbaE8d98D4B5F8Dae30a2E84d",
@@ -118,6 +119,18 @@ const config: HardhatUserConfig = {
     },
     vbnb: {
       56: "0xA07c5b74C9B40447a954e1466938b865b6BBea36",
+      97: "",
+    },
+    eth: {
+      56: "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+      97: "",
+    },
+    vai: {
+      56: "0x4BD17003473389A42DAF6a0a729f6Fdb328BbBd7",
+      97: "",
+    },
+    vvaiVault: {
+      56: "0x0667Eed0a0aAb930af74a3dfeDD263A73994f216",
       97: "",
     },
   },

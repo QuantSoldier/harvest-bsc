@@ -5,14 +5,14 @@ pragma solidity 0.6.12;
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol";
 import "@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol";
-import "../../lib/@openzeppelin/upgrades/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "./interface/IVBNB.sol";
 import "./interface/CompleteVToken.sol";
 import "../../lib/@harvest-finance/hardworkInterface/IStrategy.sol";
 import "./interface/WBNB.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
 
-contract VenusInteractorInitializable is Initializable {
+contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeable {
 
   using SafeMath for uint256;
   using SafeBEP20 for IBEP20;
@@ -30,6 +30,7 @@ contract VenusInteractorInitializable is Initializable {
     address _vtoken,
     address _comptroller
   ) public initializer {
+    __ReentrancyGuard_init();
     // Comptroller:
     comptroller = ComptrollerInterface(_comptroller);
 
@@ -45,37 +46,36 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   /**
-  * Supplies Ether to Compound
-  * Unwraps WETH to Ether, then invoke the special mint for cEther
+  * Supplies BNB to Venus
+  * Unwraps WBNB to BNB, then invoke the special mint for vBNB
   * We ask to supply "amount", if the "amount" we asked to supply is
   * more than balance (what we really have), then only supply balance.
   * If we the "amount" we want to supply is less than balance, then
   * only supply that amount.
   */
-  function _supplyBNBInWBNB(uint256 amountInWBNB) internal {
-    // underlying here is WETH
+  function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
+    // underlyingToken here is WBNB
     uint256 balance = underlyingToken.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
     }
-    WBNB wbnb = WBNB(_wbnb);
-    address _wbnbAddress = address(_wbnb);
+    WBNB wbnb = WBNB(payable(address(_wbnb)));
     wbnb.withdraw(balance); // Unwrapping
     IVBNB(address(vtoken)).mint.value(balance)();
   }
 
   /**
-  * Redeems Ether from Compound
-  * receives Ether. Wrap all the ether that is in this contract.
+  * Redeems BNB from Venus
+  * receives BNB. Wrap all the BNB that is in this contract.
   */
-  function _redeemBNBInvTokens(uint256 amountVTokens) internal {
+  function _redeemBNBInvTokens(uint256 amountVTokens) internal nonReentrant {
     _redeemInVTokens(amountVTokens);
-    WBNB wbnb = WBNB(_wbnb);
+    WBNB wbnb = WBNB(payable(address(_wbnb)));
     wbnb.deposit.value(address(this).balance)();
   }
 
   /**
-  * Supplies to Compound
+  * Supplies to Venus
   */
   function _supply(uint256 amount) internal returns(uint256) {
     uint256 balance = underlyingToken.balanceOf(address(this));
@@ -93,7 +93,7 @@ contract VenusInteractorInitializable is Initializable {
   * Borrows against the collateral
   */
   function _borrow(uint256 amountUnderlying) internal {
-    // Borrow DAI, check the DAI balance for this contract's address
+    // Borrow, check the balance for this contract's address
     uint256 result = vtoken.borrow(amountUnderlying);
     require(result == 0, "Borrow failed");
   }
@@ -102,10 +102,10 @@ contract VenusInteractorInitializable is Initializable {
   * Borrows against the collateral
   */
   function _borrowInWBNB(uint256 amountUnderlying) internal {
-    // Borrow ETH, wraps into WETH
+    // Borrow BNB, wraps into WBNB
     uint256 result = vtoken.borrow(amountUnderlying);
     require(result == 0, "Borrow failed");
-    WBNB wbnb = WBNB(_wbnb);
+    WBNB wbnb = WBNB(payable(address(_wbnb)));
     wbnb.deposit.value(address(this).balance)();
   }
 
@@ -120,10 +120,10 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   /**
-  * Repays a loan in ETH
+  * Repays a loan in BNB
   */
   function _repayInWBNB(uint256 amountUnderlying) internal {
-    WBNB wbnb = WBNB(_wbnb);
+    WBNB wbnb = WBNB(payable(address(_wbnb)));
     wbnb.withdraw(amountUnderlying); // Unwrapping
     IVBNB(address(vtoken)).repayBorrow.value(amountUnderlying)();
   }
@@ -152,7 +152,7 @@ contract VenusInteractorInitializable is Initializable {
   function redeemUnderlyingInWBNB(uint256 amountUnderlying) internal {
     if (amountUnderlying > 0) {
       _redeemUnderlying(amountUnderlying);
-      WBNB wbnb = WBNB(_wbnb);
+      WBNB wbnb = WBNB(payable(address(_wbnb)));
       wbnb.deposit.value(address(this).balance)();
     }
   }
@@ -165,13 +165,13 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   /**
-  * Redeem the minimum of the WETH we own, and the WETH that the vToken can
+  * Redeem the minimum of the WBNB we own, and the WBNB that the vToken can
   * immediately retrieve. Ensures that `redeemMaximum` doesn't fail silently
   */
   function redeemMaximumWBNB() internal {
-    // amount of WETH in contract
+    // amount of WBNB in contract
     uint256 available = vtoken.getCash();
-    // amount of WETH we own
+    // amount of WBNB we own
     uint256 owned = vtoken.balanceOfUnderlying(address(this));
 
     // redeem the most we can redeem
@@ -179,11 +179,11 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   function redeemMaximumWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
-    // amount of liquidity in Compound
+    // amount of liquidity in Venus
     uint256 available = vtoken.getCash();
-    // amount of WETH we supplied
+    // amount we supplied
     uint256 supplied = vtoken.balanceOfUnderlying(address(this));
-    // amount of WETH we borrowed
+    // amount we borrowed
     uint256 borrowed = vtoken.borrowBalanceCurrent(address(this));
 
     while (borrowed > borrowMinThreshold) {
@@ -211,11 +211,11 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   function redeemMaximumWBNBWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
-    // amount of liquidity in Compound
+    // amount of liquidity in Venus
     uint256 available = vtoken.getCash();
-    // amount of WETH we supplied
+    // amount of WBNB we supplied
     uint256 supplied = vtoken.balanceOfUnderlying(address(this));
-    // amount of WETH we borrowed
+    // amount of WBNB we borrowed
     uint256 borrowed = vtoken.borrowBalanceCurrent(address(this));
 
     while (borrowed > borrowMinThreshold) {
@@ -247,7 +247,7 @@ contract VenusInteractorInitializable is Initializable {
   }
 
   function redeemMaximumToken() internal {
-    // amount of tokens in ctoken
+    // amount of tokens in vtoken
     uint256 available = vtoken.getCash();
     // amount of tokens we own
     uint256 owned = vtoken.balanceOfUnderlying(address(this));
@@ -256,5 +256,5 @@ contract VenusInteractorInitializable is Initializable {
     _redeemUnderlying(available < owned ? available : owned);
   }
 
-  receive() external payable {} // this is needed for the WETH unwrapping
+  receive() external payable {} // this is needed for the WBNB unwrapping
 }

@@ -39,15 +39,15 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   /**
-  * Supplies Ether to Compound
-  * Unwraps WETH to Ether, then invoke the special mint for cEther
+  * Supplies BNB to Venus
+  * Unwraps WBNB to BNB, then invoke the special mint for vBNB
   * We ask to supply "amount", if the "amount" we asked to supply is
   * more than balance (what we really have), then only supply balance.
   * If we the "amount" we want to supply is less than balance, then
   * only supply that amount.
   */
   function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
-    // underlying here is WETH
+    // underlying here is WBNB
     uint256 balance = underlying.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
@@ -58,8 +58,8 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   /**
-  * Redeems Ether from Compound
-  * receives Ether. Wrap all the ether that is in this contract.
+  * Redeems BNB from Venus
+  * receives BNB. Wrap all the BNB that is in this contract.
   */
   function _redeemBNBInvTokens(uint256 amountVTokens) internal nonReentrant {
     _redeemInVTokens(amountVTokens);
@@ -68,7 +68,7 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   /**
-  * Supplies to Compound
+  * Supplies to Venus
   */
   function _supply(uint256 amount) internal returns(uint256) {
     uint256 balance = underlying.balanceOf(address(this));
@@ -86,7 +86,7 @@ contract VenusInteractor is ReentrancyGuard {
   * Borrows against the collateral
   */
   function _borrow(uint256 amountUnderlying) internal {
-    // Borrow DAI, check the DAI balance for this contract's address
+    // Borrow, check the balance for this contract's address
     uint256 result = vtoken.borrow(amountUnderlying);
     require(result == 0, "Borrow failed");
   }
@@ -95,7 +95,7 @@ contract VenusInteractor is ReentrancyGuard {
   * Borrows against the collateral
   */
   function _borrowInWBNB(uint256 amountUnderlying) internal {
-    // Borrow ETH, wraps into WETH
+    // Borrow BNB, wraps into WBNB
     uint256 result = vtoken.borrow(amountUnderlying);
     require(result == 0, "Borrow failed");
     WBNB wbnb = WBNB(payable(address(_wbnb)));
@@ -113,7 +113,7 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   /**
-  * Repays a loan in ETH
+  * Repays a loan in BNB
   */
   function _repayInWBNB(uint256 amountUnderlying) internal {
     WBNB wbnb = WBNB(payable(address(_wbnb)));
@@ -158,13 +158,13 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   /**
-  * Redeem the minimum of the WETH we own, and the WETH that the vToken can
+  * Redeem the minimum of the WBNB we own, and the WBNB that the vToken can
   * immediately retrieve. Ensures that `redeemMaximum` doesn't fail silently
   */
   function redeemMaximumWBNB() internal {
-    // amount of WETH in contract
+    // amount of WBNB in contract
     uint256 available = vtoken.getCash();
-    // amount of WETH we own
+    // amount of WBNB we own
     uint256 owned = vtoken.balanceOfUnderlying(address(this));
 
     // redeem the most we can redeem
@@ -172,11 +172,11 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   function redeemMaximumWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
-    // amount of liquidity in Compound
+    // amount of liquidity in Venus
     uint256 available = vtoken.getCash();
-    // amount of WETH we supplied
+    // amount we supplied
     uint256 supplied = vtoken.balanceOfUnderlying(address(this));
-    // amount of WETH we borrowed
+    // amount we borrowed
     uint256 borrowed = vtoken.borrowBalanceCurrent(address(this));
 
     while (borrowed > borrowMinThreshold) {
@@ -204,11 +204,11 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   function redeemMaximumWBNBWithLoan(uint256 collateralFactorNumerator, uint256 collateralFactorDenominator, uint256 borrowMinThreshold) internal {
-    // amount of liquidity in Compound
+    // amount of liquidity in Venus
     uint256 available = vtoken.getCash();
-    // amount of WETH we supplied
+    // amount of WBNB we supplied
     uint256 supplied = vtoken.balanceOfUnderlying(address(this));
-    // amount of WETH we borrowed
+    // amount of WBNB we borrowed
     uint256 borrowed = vtoken.borrowBalanceCurrent(address(this));
 
     while (borrowed > borrowMinThreshold) {
@@ -240,7 +240,7 @@ contract VenusInteractor is ReentrancyGuard {
   }
 
   function redeemMaximumToken() internal {
-    // amount of tokens in ctoken
+    // amount of tokens in vtoken
     uint256 available = vtoken.getCash();
     // amount of tokens we own
     uint256 owned = vtoken.balanceOfUnderlying(address(this));
@@ -249,5 +249,5 @@ contract VenusInteractor is ReentrancyGuard {
     _redeemUnderlying(available < owned ? available : owned);
   }
 
-  receive() external payable {} // this is needed for the WETH unwrapping
+  receive() external payable {} // this is needed for the WBNB unwrapping
 }
