@@ -54,7 +54,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
   * only supply that amount.
   */
   function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
-    // underlying here is WBNB
+    // underlyingToken here is WBNB
     uint256 balance = underlyingToken.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
