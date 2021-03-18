@@ -18,7 +18,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   using SafeBEP20 for IBEP20;
 
   address constant public pancakeswapRouterV2 = address(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
-  
+
   // additional storage slots (on top of BaseUpgradeableStrategy ones) are defined here
   bytes32 internal constant _POOLID_SLOT = 0x3fd729bfa2e28b7806b03a6e014729f59477b530f995be4d51defc9dad94810b;
 
@@ -83,7 +83,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
 
   function exitRewardPool(uint256 bal) internal {
     if (poolId() == 0) {
-      IMasterChef(rewardPool()).leaveStaking(0); // withdraw 0 so that we dont notify fees on basis
+      IMasterChef(rewardPool()).leaveStaking(bal);
     } else {
       IMasterChef(rewardPool()).withdraw(poolId(), bal);
     }
@@ -135,6 +135,14 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
     }
   }
 
+  function _claimReward() internal {
+    if (poolId() == 0) {
+      IMasterChef(rewardPool()).leaveStaking(0); // withdraw 0 so that we dont notify fees on basis
+    } else {
+      IMasterChef(rewardPool()).withdraw(poolId(), 0);
+    }
+  }
+
   // We assume that all the tradings can be done on Uniswap
   function _liquidateReward() internal {
     uint256 rewardBalance = IBEP20(rewardToken()).balanceOf(address(this));
@@ -158,7 +166,7 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
 
   // Liquidate Cake into the single underlying asset (non-LP tokens), no-op if Cake is the underlying
   function _liquidateSingleAsset(uint256 remainingRewardBalance) internal {
-    if (poolId() != 0) { 
+    if (poolId() != 0) {
       address[] memory routesToken0 = pancakeswapRoutes[underlying()];
 
       uint256 amountOutMin = 1;
@@ -300,7 +308,9 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
       uint256 bal = rewardPoolBalance();
       exitRewardPool(bal);
     }
-    _liquidateReward();
+    if (poolId()!=0) {
+      _liquidateReward();
+    }
     IBEP20(underlying()).safeTransfer(vault(), IBEP20(underlying()).balanceOf(address(this)));
   }
 
@@ -363,10 +373,10 @@ contract PancakeMasterChefLPStrategy is IStrategyV2, BaseUpgradeableStrategy {
   function doHardWork() external override onlyNotPausedInvesting restricted {
     uint256 bal = rewardPoolBalance();
     if (bal != 0) {
-      exitRewardPool(bal);
+      _claimReward();
       _liquidateReward();
     }
-    
+
     investAllUnderlying();
   }
 

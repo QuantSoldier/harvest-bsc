@@ -55,7 +55,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
   */
   function _supplyBNBInWBNB(uint256 amountInWBNB) internal nonReentrant {
     // underlying here is WBNB
-    uint256 balance = underlying.balanceOf(address(this)); // supply at most "balance"
+    uint256 balance = underlyingToken.balanceOf(address(this)); // supply at most "balance"
     if (amountInWBNB < balance) {
       balance = amountInWBNB; // only supply the "amount" if its less than what we have
     }
@@ -78,12 +78,12 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
   * Supplies to Venus
   */
   function _supply(uint256 amount) internal returns(uint256) {
-    uint256 balance = underlying.balanceOf(address(this));
+    uint256 balance = underlyingToken.balanceOf(address(this));
     if (amount < balance) {
       balance = amount;
     }
-    underlying.safeApprove(address(vtoken), 0);
-    underlying.safeApprove(address(vtoken), balance);
+    underlyingToken.safeApprove(address(vtoken), 0);
+    underlyingToken.safeApprove(address(vtoken), balance);
     uint256 mintResult = vtoken.mint(balance);
     require(mintResult == 0, "Supplying failed");
     return balance;
@@ -113,10 +113,10 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
   * Repays a loan
   */
   function _repay(uint256 amountUnderlying) internal {
-    underlying.safeApprove(address(vtoken), 0);
-    underlying.safeApprove(address(vtoken), amountUnderlying);
+    underlyingToken.safeApprove(address(vtoken), 0);
+    underlyingToken.safeApprove(address(vtoken), amountUnderlying);
     vtoken.repayBorrow(amountUnderlying);
-    underlying.safeApprove(address(vtoken), 0);
+    underlyingToken.safeApprove(address(vtoken), 0);
   }
 
   /**
@@ -197,7 +197,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
       _redeemUnderlying(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
-      uint256 balance = underlying.balanceOf(address(this));
+      uint256 balance = underlyingToken.balanceOf(address(this));
       _repay(SafeMath.min(borrowed, balance));
 
       // update the parameters
@@ -229,7 +229,7 @@ contract VenusInteractorInitializable is Initializable, ReentrancyGuardUpgradeab
       redeemUnderlyingInWBNB(SafeMath.min(wantToRedeem, available));
 
       // now we can repay our borrowed amount
-      uint256 balance = underlying.balanceOf(address(this));
+      uint256 balance = underlyingToken.balanceOf(address(this));
       _repayInWBNB(SafeMath.min(borrowed, balance));
 
       // update the parameters
